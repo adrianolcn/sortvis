@@ -1,21 +1,19 @@
-# <div align="center">🟢 SORT//VIS</div>
-
 <div align="center">
 
-```text
+# 🟢 SORT//VIS
+
+<pre>
 +--------------------------------------------------------------+
-| SORT//VIS :: RETRO SORTING LAB                               |
+|              SORT//VIS :: RETRO SORTING LAB                  |
 | STATUS  : ONLINE                                             |
 | STACK   : HTML / CSS / JAVASCRIPT                            |
 | MODE    : ZERO BUILD STEP                                    |
 | DISPLAY : CRT-STYLE CANVAS VISUALIZER                        |
 | CONTROL : START / PAUSE / STEP / HALT / RESET                |
 +--------------------------------------------------------------+
-```
+</pre>
 
 ### Visualizador retro de algoritmos de ordenação com JavaScript puro, Canvas, estética CRT e execução passo a passo.
-
-<br />
 
 ![HTML5](https://img.shields.io/badge/HTML5-111?style=for-the-badge&logo=html5&logoColor=E34F26)
 ![CSS3](https://img.shields.io/badge/CSS3-111?style=for-the-badge&logo=css3&logoColor=1572B6)
@@ -30,9 +28,8 @@
 ![Portfolio](https://img.shields.io/badge/portfolio-ready-FFB700?style=flat-square)
 ![i18n](https://img.shields.io/badge/i18n-EN%20%7C%20PT--BR-FF5CF0?style=flat-square)
 
-<br />
-
 <a href="#-demo">Demo</a> •
+<a href="#-preview">Preview</a> •
 <a href="#-sobre-o-projeto">Sobre</a> •
 <a href="#-algoritmos">Algoritmos</a> •
 <a href="#-como-executar">Executar</a> •
@@ -45,31 +42,44 @@
 
 ## 🎬 Demo
 
-> Coloque aqui um GIF curto mostrando a execução do projeto.
->
-> Sugestão de nome: `docs/demo/sortvis-demo.gif`
-
 <div align="center">
 
-<!-- Substitua o caminho abaixo pelo GIF real do projeto -->
-<img src="docs/demo/sortvis-demo.gif" alt="Demonstração do SORT//VIS" width="900" />
+https://github.com/user-attachments/assets/docs/demo/sortvis-demo.mp4
 
 </div>
 
-> Caso ainda não tenha o GIF, você pode manter essa seção e adicionar o arquivo depois.
-> O README continuará funcionando normalmente, apenas a imagem não será exibida até o GIF existir.
+> O arquivo de demonstração também pode ficar no repositório em `docs/demo/sortvis-demo.mp4`.  
+> Para o GitHub exibir vídeo diretamente no README, a forma mais confiável é arrastar o `.mp4` em uma issue, PR ou release, copiar o link gerado `https://github.com/user-attachments/assets/...` e substituir o placeholder acima.
 
+---
+
+## 🖼️ Preview
+
+<div align="center">
+
+## 🌍 Interface Preview
+
+<p>
+  <img src="docs/screenshots/sortvis-preview-en.png" alt="SORT//VIS - English UI" width="49%" />
+
+  <img src="docs/screenshots/sortvis-preview-ptbr.png" alt="SORT//VIS - PT-BR UI" width="49%" />
+</p>
+
+<p>
+  <em>🇺🇸 English</em> &nbsp;&nbsp;•&nbsp;&nbsp; <em>🇧🇷 Português (Brasil)</em>
+</p>
+
+</div>
 ---
 
 ## 🧠 Sobre o projeto
 
 O **SORT//VIS** é uma aplicação front-end de página única criada para visualizar algoritmos de ordenação em tempo real, com uma estética inspirada em monitores antigos, terminais retrô e interfaces CRT.
 
-A proposta não é apenas mostrar barras se mexendo. O projeto funciona como um pequeno laboratório visual de algoritmos, permitindo observar comparações, trocas, leituras, escritas, tempo de execução, progresso e comportamento interno de cada estratégia de ordenação.
+A proposta não é apenas mostrar barras se movendo. O projeto funciona como um laboratório visual de algoritmos, permitindo observar comparações, trocas, leituras, escritas, tempo de execução, progresso e comportamento interno de cada estratégia de ordenação.
 
 Ele foi desenvolvido com foco em:
 
-- visual forte para portfólio;
 - execução didática dos algoritmos;
 - responsividade para desktop e mobile;
 - controles reais de execução;
@@ -110,33 +120,6 @@ Ele foi desenvolvido com foco em:
     <td>Projeto estático em HTML, CSS e JavaScript puro. Sem framework, sem bundler, sem etapa de build.</td>
   </tr>
 </table>
-
----
-
-## 🖼️ Preview
-
-<div align="center">
-
-<!-- Substitua pelas screenshots reais do projeto -->
-<img src="docs/screenshots/desktop-preview.png" alt="Preview desktop do SORT//VIS" width="900" />
-
-<br />
-<br />
-
-<img src="docs/screenshots/mobile-preview.png" alt="Preview mobile do SORT//VIS" width="280" />
-
-</div>
-
-> Sugestão de estrutura para imagens:
->
-> ```text
-> docs/
-> ├── demo/
-> │   └── sortvis-demo.gif
-> └── screenshots/
->     ├── desktop-preview.png
->     └── mobile-preview.png
-> ```
 
 ---
 
@@ -218,34 +201,13 @@ GitHub Actions
 GitHub Pages
 ```
 
-O projeto foi construído com **JavaScript puro**, sem frameworks e sem dependência de etapa de build.
-
 ---
 
 ## 🚀 Como executar
 
-Clone o repositório:
-
-```bash
-git clone https://github.com/SEU-USUARIO/SEU-REPOSITORIO.git
-cd SEU-REPOSITORIO
-```
-
-Instale as dependências:
-
 ```bash
 npm install
-```
-
-Execute as validações:
-
-```bash
 node scripts/ci-check.js
-```
-
-Execute os testes E2E:
-
-```bash
 npm run test:e2e
 ```
 
@@ -255,29 +217,36 @@ Para abrir diretamente no navegador:
 open index.html
 ```
 
-No Windows, você também pode simplesmente dar duplo clique no arquivo `index.html`.
+No Windows, você também pode abrir o arquivo `index.html` com duplo clique ou usar:
+
+```bash
+start index.html
+```
 
 ---
 
 ## 🧪 Testes e qualidade
 
-O repositório inclui controles de qualidade para garantir que a aplicação continue funcionando corretamente.
+O repositório inclui:
 
-### Validações atuais
-
-- sintaxe JavaScript embutida no `index.html`;
-- presença dos controles principais;
-- consistência dos metadados dos algoritmos;
+- validação estrutural em `scripts/ci-check.js`;
+- testes smoke E2E com Playwright;
+- fluxo de CI com GitHub Actions;
+- verificação de controles principais;
+- checagem de metadados dos algoritmos;
 - guardrails de layout mobile;
-- smoke tests em desktop e mobile;
-- execução em CI com GitHub Actions.
+- interação real em navegador desktop e mobile.
 
-### Comandos principais
+---
 
-```bash
-node scripts/ci-check.js
-npm run test:e2e
-```
+## 🌍 Deploy no GitHub Pages
+
+Este projeto é estático e pode ser publicado diretamente no GitHub Pages:
+
+1. Faça push do repositório para o GitHub.
+2. Acesse **Settings > Pages**.
+3. Selecione a branch que contém o `index.html`.
+4. Publique a partir da raiz do repositório.
 
 ---
 
@@ -285,109 +254,41 @@ npm run test:e2e
 
 ```text
 SORT-VIS/
-├── .github/
-│   └── workflows/
-│       └── ci.yml
+├── index.html
+├── README.md
 ├── docs/
 │   ├── demo/
-│   │   └── sortvis-demo.gif
+│   │   └── sortvis-demo.mp4
 │   └── screenshots/
-│       ├── desktop-preview.png
-│       └── mobile-preview.png
+│       ├── sortvis-preview-en.png
+│       └── sortvis-preview-ptbr.png
 ├── scripts/
 │   └── ci-check.js
 ├── tests/
-│   └── sortvis.spec.js
-├── index.html
-├── package.json
-└── README.md
+│   └── smoke.spec.js
+└── .github/
+    └── workflows/
+        └── ci.yml
 ```
 
 ---
 
-## 🌍 Deploy no GitHub Pages
+## 💡 Descrição curta para o GitHub
 
-Este projeto é estático e pode ser publicado diretamente no GitHub Pages.
-
-1. Faça push do projeto para o GitHub.
-2. Acesse **Settings**.
-3. Vá em **Pages**.
-4. Em **Build and deployment**, selecione a branch principal.
-5. Escolha a pasta raiz do repositório.
-6. Clique em **Save**.
-
-Depois disso, o GitHub irá gerar uma URL pública para acessar o projeto.
-
----
-
-## 🧭 Roadmap
-
-- [x] Visualizador em Canvas
-- [x] Interface CRT retro
-- [x] 13 algoritmos de ordenação
-- [x] Execução passo a passo
-- [x] Telemetria em tempo real
-- [x] Responsividade mobile
-- [x] Internacionalização EN/PT-BR
-- [x] Testes E2E com Playwright
-- [x] CI com GitHub Actions
-- [ ] Comparação de algoritmos lado a lado
-- [ ] Entrada manual de arrays
-- [ ] Exportação da execução em GIF ou vídeo
-- [ ] Modo educacional com explicações durante a execução
-- [ ] Toggle de acessibilidade para reduzir efeitos CRT
-- [ ] Página de documentação dos algoritmos
-
----
-
-## 💡 Ideias futuras
-
-Algumas evoluções possíveis para tornar o projeto ainda mais robusto:
-
-- modo professor, explicando cada operação em linguagem natural;
-- comparação simultânea entre dois ou mais algoritmos;
-- benchmark visual entre estratégias diferentes;
-- suporte a arrays personalizados;
-- exportação da execução como imagem, vídeo ou GIF;
-- gráfico de evolução das operações;
-- painel teórico explicando Big-O, estabilidade e uso de memória;
-- melhorias de acessibilidade visual para usuários sensíveis a brilho, flicker ou efeitos CRT.
-
----
-
-## 🤝 Contribuição
-
-Contribuições são bem-vindas.
-
-Para contribuir:
-
-1. Faça um fork do projeto.
-2. Crie uma branch:
-
-```bash
-git checkout -b feature/minha-melhoria
+```text
+Retro sorting visualizer built with vanilla JS, Canvas, CRT aesthetics, i18n, telemetry and step-by-step execution controls.
 ```
-
-3. Faça suas alterações.
-4. Rode os testes.
-5. Envie um Pull Request.
 
 ---
 
 ## 📄 Licença
 
-Este projeto está sob a licença **MIT**.
-
----
+Distribuído sob licença **MIT**.
 
 <div align="center">
 
-```text
-SYSTEM MESSAGE :: SORTING COMPLETE
-STATUS         :: PORTFOLIO READY
-SIGNAL         :: GREEN
-```
+---
 
-### Feito com JavaScript puro, paciência algorítmica e estética de terminal retro.
+<strong>SORT//VIS</strong> — feito para transformar algoritmos em experiência visual.
 
 </div>
