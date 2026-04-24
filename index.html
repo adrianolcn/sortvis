@@ -1,0 +1,2973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SORT//VIS - Retro Sorting Algorithm Visualizer</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323:wght@400&display=swap');
+
+  :root {
+    --green: #39ff14;
+    --green-soft: #24be11;
+    --green-deep: #0e2d0b;
+    --green-dim: #0a1609;
+    --amber: #ffb700;
+    --red: #ff5757;
+    --magenta: #ff5cf0;
+    --cyan: #56f0ff;
+    --panel: rgba(5, 15, 5, 0.88);
+    --panel-strong: rgba(1, 9, 1, 0.94);
+    --border: rgba(57, 255, 20, 0.18);
+    --bg: #020702;
+    --bg-2: #041004;
+    --shadow: 0 0 14px rgba(57, 255, 20, 0.22);
+    --shadow-soft: 0 0 10px rgba(57, 255, 20, 0.12);
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html,
+  body {
+    min-height: 100%;
+    background:
+      radial-gradient(circle at top, rgba(18, 70, 18, 0.28), transparent 30%),
+      linear-gradient(180deg, #030a03 0%, #020702 60%, #010401 100%);
+    color: var(--green);
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  body {
+    overflow: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.12) 2px,
+      rgba(0, 0, 0, 0.12) 4px
+    );
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9998;
+    background:
+      radial-gradient(ellipse at center, transparent 58%, rgba(0, 0, 0, 0.72) 100%),
+      linear-gradient(90deg, rgba(57, 255, 20, 0.015), transparent 14%, transparent 86%, rgba(57, 255, 20, 0.015));
+  }
+
+  #app {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: 12px;
+    height: 100vh;
+    max-width: 1380px;
+    margin: 0 auto;
+    padding: 16px 18px 14px;
+  }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .brand {
+    display: grid;
+    gap: 4px;
+  }
+
+  .header-side {
+    display: grid;
+    justify-items: end;
+    gap: 10px;
+  }
+
+  .logo {
+    font-family: 'VT323', monospace;
+    font-size: clamp(2.4rem, 4vw, 3.4rem);
+    letter-spacing: 4px;
+    line-height: 0.92;
+    color: #d9ffd2;
+    text-shadow: 0 0 10px rgba(57, 255, 20, 0.5), 0 0 22px rgba(57, 255, 20, 0.18);
+  }
+
+  .logo span {
+    color: var(--amber);
+  }
+
+  .tagline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 12px;
+    font-size: 0.72rem;
+    letter-spacing: 2.4px;
+    color: rgba(145, 255, 145, 0.72);
+    text-transform: uppercase;
+  }
+
+  .tagline .divider {
+    color: rgba(87, 175, 87, 0.6);
+  }
+
+  #status-bar {
+    display: grid;
+    justify-items: end;
+    gap: 8px;
+    min-width: 320px;
+  }
+
+  .lang-switch {
+    display: inline-flex;
+    gap: 8px;
+    padding: 6px;
+    border: 1px solid rgba(57, 255, 20, 0.14);
+    background: rgba(5, 14, 5, 0.82);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .lang-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: rgba(185, 255, 185, 0.78);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+    text-transform: uppercase;
+  }
+
+  .lang-btn:hover,
+  .lang-btn:focus-visible {
+    border-color: rgba(57, 255, 20, 0.22);
+    background: rgba(57, 255, 20, 0.08);
+    outline: none;
+  }
+
+  .lang-btn.is-active {
+    border-color: rgba(57, 255, 20, 0.34);
+    background: rgba(57, 255, 20, 0.12);
+    color: #f3ffee;
+  }
+
+  .lang-flag {
+    font-size: 0.95rem;
+    line-height: 1;
+  }
+
+  .state-line,
+  .metric-line {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 10px;
+    align-items: center;
+    font-size: 0.74rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  .state-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 100px;
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    color: #d3ffd0;
+    background: rgba(6, 18, 6, 0.8);
+    box-shadow: inset 0 0 0 1px rgba(57, 255, 20, 0.05), var(--shadow-soft);
+  }
+
+  .metric-chip {
+    padding: 2px 0;
+  }
+
+  .metric-chip strong {
+    font-weight: 400;
+    color: #e5ffe0;
+  }
+
+  .metric-chip .amber {
+    color: var(--amber);
+  }
+
+  .metric-chip .red {
+    color: var(--red);
+  }
+
+  .metric-chip .cyan {
+    color: var(--cyan);
+  }
+
+  .shell {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 12px;
+    min-height: 0;
+  }
+
+  .screen {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 31%);
+    grid-template-rows: minmax(420px, 1fr) auto;
+    grid-template-areas:
+      "canvas info"
+      "footer footer";
+    gap: 12px;
+    min-height: 0;
+    padding: 12px;
+    border: 1px solid var(--border);
+    background:
+      linear-gradient(180deg, rgba(10, 32, 10, 0.42), rgba(3, 8, 3, 0.94)),
+      radial-gradient(circle at top, rgba(57, 255, 20, 0.09), transparent 36%);
+    box-shadow: inset 0 0 0 1px rgba(57, 255, 20, 0.04), 0 0 24px rgba(0, 0, 0, 0.26);
+    overflow: hidden;
+    border-radius: 8px;
+  }
+
+  #canvas-wrap {
+    position: relative;
+    grid-area: canvas;
+    min-height: 420px;
+    border: 1px solid rgba(57, 255, 20, 0.1);
+    background:
+      linear-gradient(180deg, rgba(2, 12, 2, 0.78), rgba(0, 4, 0, 0.92)),
+      radial-gradient(circle at top, rgba(57, 255, 20, 0.04), transparent 32%);
+    overflow: hidden;
+    border-radius: 6px;
+  }
+
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .overlay {
+    position: relative;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    backdrop-filter: blur(2px);
+    box-shadow: var(--shadow-soft);
+  }
+
+  #info-panel {
+    grid-area: info;
+    padding: 12px 14px;
+  }
+
+  .info-layout {
+    display: grid;
+    gap: 10px;
+  }
+
+  .info-main {
+    display: grid;
+    gap: 0;
+  }
+
+  .panel-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .algo-name {
+    font-family: 'VT323', monospace;
+    font-size: 1.8rem;
+    line-height: 0.92;
+    letter-spacing: 2px;
+    color: var(--amber);
+  }
+
+  .algo-family {
+    font-size: 0.68rem;
+    letter-spacing: 1.4px;
+    color: rgba(141, 255, 141, 0.7);
+    text-transform: uppercase;
+  }
+
+  .meta-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 10px;
+    margin-bottom: 10px;
+  }
+
+  .meta-item {
+    padding: 8px;
+    border: 1px solid rgba(57, 255, 20, 0.1);
+    background: rgba(4, 12, 4, 0.64);
+  }
+
+  .meta-item span {
+    display: block;
+    font-size: 0.62rem;
+    letter-spacing: 1.6px;
+    color: rgba(128, 204, 128, 0.72);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .meta-item strong {
+    font-weight: 400;
+    color: #eeffe8;
+  }
+
+  .desc {
+    color: rgba(182, 255, 182, 0.8);
+    font-size: 0.73rem;
+    line-height: 1.65;
+  }
+
+  .info-rail {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .rail-item {
+    padding: 7px 8px;
+    border: 1px solid rgba(57, 255, 20, 0.1);
+    background: rgba(4, 12, 4, 0.64);
+  }
+
+  .rail-item span {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 0.58rem;
+    letter-spacing: 1.5px;
+    color: rgba(130, 208, 130, 0.72);
+    text-transform: uppercase;
+  }
+
+  .rail-item strong {
+    display: block;
+    font-weight: 400;
+    font-size: 0.8rem;
+    color: #ecffe6;
+    word-break: break-word;
+  }
+
+  #screen-footer {
+    grid-area: footer;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 12px;
+    font-size: 0.7rem;
+    letter-spacing: 1.25px;
+    text-transform: uppercase;
+  }
+
+  #screen-footer strong {
+    font-weight: 400;
+    color: #eeffe8;
+  }
+
+  .footer-card {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 8px 10px;
+    border: 1px solid rgba(57, 255, 20, 0.08);
+    background: rgba(4, 11, 4, 0.66);
+  }
+
+  .footer-card strong {
+    display: block;
+    margin-top: 5px;
+  }
+
+  .sidebar {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: 12px;
+    min-height: 0;
+  }
+
+  .terminal-card {
+    border: 1px solid var(--border);
+    background: var(--panel-strong);
+    box-shadow: inset 0 0 0 1px rgba(57, 255, 20, 0.04), var(--shadow);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .terminal-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(57, 255, 20, 0.05);
+    font-size: 0.68rem;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    color: rgba(155, 255, 155, 0.84);
+  }
+
+  .terminal-body {
+    padding: 12px;
+  }
+
+  .hud-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .hud-item {
+    padding: 10px;
+    border: 1px solid rgba(57, 255, 20, 0.1);
+    background: rgba(3, 10, 3, 0.76);
+  }
+
+  .hud-item span {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 0.63rem;
+    letter-spacing: 1.7px;
+    color: rgba(123, 201, 123, 0.76);
+    text-transform: uppercase;
+  }
+
+  .hud-item strong {
+    font-weight: 400;
+    color: #f0ffee;
+  }
+
+  .accent-amber {
+    color: var(--amber);
+  }
+
+  .accent-red {
+    color: var(--red);
+  }
+
+  .accent-cyan {
+    color: var(--cyan);
+  }
+
+  .accent-magenta {
+    color: var(--magenta);
+  }
+
+  .log-list {
+    list-style: none;
+    display: grid;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .log-list li {
+    padding: 10px;
+    border-left: 2px solid rgba(57, 255, 20, 0.28);
+    background: rgba(3, 10, 3, 0.75);
+    color: rgba(195, 255, 195, 0.84);
+    font-size: 0.72rem;
+    line-height: 1.45;
+  }
+
+  .legend {
+    display: grid;
+    gap: 10px;
+  }
+
+  .legend-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.72rem;
+    color: rgba(183, 255, 183, 0.86);
+  }
+
+  .swatch {
+    width: 14px;
+    height: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.08);
+  }
+
+  .kbd-hints {
+    display: grid;
+    gap: 7px;
+    margin-top: 12px;
+    color: rgba(190, 255, 190, 0.78);
+    font-size: 0.72rem;
+  }
+
+  .kbd-hints code {
+    padding: 2px 6px;
+    border: 1px solid rgba(57, 255, 20, 0.16);
+    background: rgba(7, 18, 7, 0.86);
+    color: #f0ffee;
+  }
+
+  footer {
+    display: grid;
+    gap: 10px;
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+  }
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .ctrl-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    border: 1px solid rgba(57, 255, 20, 0.1);
+    background: rgba(5, 12, 5, 0.82);
+  }
+
+  .ctrl-label {
+    white-space: nowrap;
+    font-size: 0.64rem;
+    letter-spacing: 1.8px;
+    color: rgba(122, 198, 122, 0.76);
+    text-transform: uppercase;
+  }
+
+  select,
+  input[type="range"] {
+    border: 1px solid rgba(57, 255, 20, 0.16);
+    background: rgba(4, 12, 4, 0.92);
+    color: var(--green);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.78rem;
+    outline: none;
+  }
+
+  select {
+    min-width: 176px;
+    padding: 6px 8px;
+    appearance: none;
+    cursor: pointer;
+  }
+
+  select:hover,
+  select:focus,
+  input[type="range"]:hover,
+  input[type="range"]:focus {
+    border-color: rgba(57, 255, 20, 0.35);
+    box-shadow: var(--shadow-soft);
+  }
+
+  select option {
+    background: #041004;
+  }
+
+  input[type="range"] {
+    width: 120px;
+    accent-color: var(--green);
+  }
+
+  .value-label {
+    min-width: 44px;
+    text-align: right;
+    color: #eaffea;
+    font-size: 0.76rem;
+  }
+
+  .button-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-left: auto;
+  }
+
+  .btn {
+    border: 1px solid rgba(57, 255, 20, 0.24);
+    background: transparent;
+    color: var(--green);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.78rem;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: transform 0.12s ease, background 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+  }
+
+  .btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    background: rgba(57, 255, 20, 0.1);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .btn:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  .btn.primary {
+    background: rgba(57, 255, 20, 0.18);
+    border-color: rgba(57, 255, 20, 0.42);
+    color: #f4fff1;
+  }
+
+  .btn.warning {
+    border-color: rgba(255, 183, 0, 0.4);
+    color: var(--amber);
+  }
+
+  .btn.danger {
+    border-color: rgba(255, 87, 87, 0.42);
+    color: var(--red);
+  }
+
+  .btn:disabled {
+    opacity: 0.38;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  .footer-note {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 0.7rem;
+    letter-spacing: 1.4px;
+    color: rgba(150, 235, 150, 0.74);
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 1120px) {
+    body {
+      overflow: auto;
+    }
+
+    #app {
+      height: auto;
+      min-height: 100vh;
+    }
+
+    .shell {
+      grid-template-columns: 1fr;
+    }
+
+    .screen {
+      grid-template-columns: minmax(0, 1fr) 320px;
+      grid-template-rows: minmax(360px, 1fr) auto;
+    }
+
+    .sidebar {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-rows: auto;
+    }
+
+    .button-row {
+      margin-left: 0;
+    }
+  }
+
+  @media (max-width: 760px) {
+    #app {
+      padding: 12px;
+      gap: 10px;
+    }
+
+    header {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .header-side {
+      justify-items: start;
+    }
+
+    #status-bar {
+      justify-items: start;
+      min-width: 0;
+    }
+
+    .state-line,
+    .metric-line {
+      justify-content: flex-start;
+    }
+
+    .lang-switch {
+      align-self: flex-start;
+    }
+
+    .screen {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: clamp(180px, 34vh, 260px) auto auto;
+      grid-template-areas:
+        "canvas"
+        "info"
+        "footer";
+      align-content: start;
+      min-height: 0;
+      overflow: visible;
+      padding: 0;
+      gap: 0;
+    }
+
+    #canvas-wrap {
+      position: relative;
+      min-height: 180px;
+      height: clamp(180px, 34vh, 260px);
+      border: none;
+      border-bottom: 1px solid rgba(57, 255, 20, 0.12);
+      border-radius: 0;
+    }
+
+    .overlay {
+      position: static;
+      margin: 0;
+      width: auto;
+      border-left: none;
+      border-right: none;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    #info-panel {
+      padding: 12px;
+      background: linear-gradient(180deg, rgba(4, 18, 4, 0.94), rgba(2, 10, 2, 0.96));
+    }
+
+    .info-layout {
+      grid-template-columns: minmax(0, 1fr) 94px;
+      align-items: stretch;
+      gap: 10px;
+    }
+
+    .info-rail {
+      grid-template-columns: 1fr;
+      align-content: start;
+    }
+
+    #screen-footer {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-items: stretch;
+      gap: 8px;
+      padding: 10px 12px 12px;
+      border-top: 1px solid rgba(57, 255, 20, 0.1);
+      background: linear-gradient(180deg, rgba(3, 12, 3, 0.92), rgba(1, 7, 1, 0.98));
+    }
+
+    .panel-title {
+      align-items: flex-start;
+    }
+
+    .algo-name {
+      font-size: 1.55rem;
+    }
+
+    .algo-family {
+      padding-top: 4px;
+      text-align: right;
+    }
+
+    .meta-grid {
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .meta-item {
+      padding: 7px 8px;
+    }
+
+    .desc {
+      font-size: 0.68rem;
+      line-height: 1.55;
+    }
+
+    .rail-item {
+      padding: 6px 7px;
+    }
+
+    .rail-item strong {
+      font-size: 0.72rem;
+    }
+
+    .footer-card {
+      padding: 8px 9px;
+    }
+
+    .sidebar {
+      grid-template-columns: 1fr;
+    }
+
+    .controls {
+      align-items: stretch;
+    }
+
+    .ctrl-group {
+      flex: 1 1 100%;
+      justify-content: space-between;
+    }
+
+    select,
+    input[type="range"] {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .button-row {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .btn {
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 540px) {
+    #app {
+      padding: 8px;
+    }
+
+    .screen {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: clamp(150px, 28vh, 210px) auto auto;
+    }
+
+    #canvas-wrap {
+      min-height: 150px;
+      height: clamp(150px, 28vh, 210px);
+    }
+
+    .state-chip {
+      min-width: 84px;
+    }
+
+    .state-line,
+    .metric-line,
+    .footer-note {
+      gap: 8px;
+    }
+
+    .ctrl-group {
+      padding: 8px;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .ctrl-label,
+    .value-label {
+      min-width: 100%;
+      text-align: left;
+    }
+
+    #status-bar {
+      gap: 10px;
+    }
+
+    .panel-title {
+      gap: 6px;
+      margin-bottom: 7px;
+    }
+
+    .algo-name {
+      font-size: 1.35rem;
+    }
+
+    .algo-family,
+    .desc,
+    #screen-footer {
+      font-size: 0.65rem;
+    }
+
+    .meta-item strong {
+      font-size: 0.95rem;
+    }
+
+    .info-layout {
+      grid-template-columns: minmax(0, 1fr) 82px;
+      gap: 8px;
+    }
+
+    .rail-item {
+      padding: 6px;
+    }
+
+    .rail-item span {
+      font-size: 0.52rem;
+    }
+
+    .rail-item strong {
+      font-size: 0.68rem;
+    }
+
+    #screen-footer {
+      grid-template-columns: 1fr;
+    }
+
+    .button-row {
+      grid-template-columns: 1fr;
+    }
+
+    .logo {
+      font-size: 2.4rem;
+    }
+
+    .meta-grid,
+    .hud-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="brand">
+      <div class="logo">SORT<span>//</span>VIS</div>
+      <div class="tagline">
+        <span id="tagline-lab">Retro Sorting Lab</span>
+        <span class="divider">::</span>
+        <span id="tagline-stack">Pure HTML + CSS + JavaScript</span>
+        <span class="divider">::</span>
+        <span id="tagline-core">Step-by-Step Execution Core</span>
+      </div>
+    </div>
+
+    <div class="header-side">
+      <div id="status-bar">
+        <div class="state-line">
+          <span class="state-chip" id="run-state">IDLE</span>
+          <span class="metric-chip"><span id="mode-label">MODE</span> <strong id="dataset-label">RANDOM</strong></span>
+          <span class="metric-chip"><span id="progress-text-label">PROGRESS</span> <strong id="progress-label">0%</strong></span>
+        </div>
+        <div class="metric-line">
+          <span class="metric-chip">CMP <strong class="amber" id="cmp-count">0</strong></span>
+          <span class="metric-chip">SWP <strong class="red" id="swp-count">0</strong></span>
+          <span class="metric-chip">READ <strong class="cyan" id="read-count">0</strong></span>
+          <span class="metric-chip">WRITE <strong id="write-count">0</strong></span>
+          <span class="metric-chip"><span id="time-label">TIME</span> <strong id="time-display">0.000s</strong></span>
+        </div>
+      </div>
+
+      <div class="lang-switch" role="group" aria-label="Language selector">
+        <button class="lang-btn is-active" id="lang-en" type="button" data-locale="en" aria-label="Use English">
+          <span class="lang-flag">🇺🇸</span>
+          <span>EN</span>
+        </button>
+        <button class="lang-btn" id="lang-pt" type="button" data-locale="pt" aria-label="Usar português do Brasil">
+          <span class="lang-flag">🇧🇷</span>
+          <span>PT-BR</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <section class="shell">
+    <div class="screen">
+      <div id="canvas-wrap">
+        <canvas id="c"></canvas>
+      </div>
+
+      <div class="overlay" id="info-panel">
+        <div class="info-layout">
+          <div class="info-main">
+            <div class="panel-title">
+              <div class="algo-name" id="info-name">BUBBLE SORT</div>
+              <div class="algo-family" id="info-family">Exchange</div>
+            </div>
+
+            <div class="meta-grid">
+              <div class="meta-item">
+                <span id="info-time-label">Time</span>
+                <strong id="info-time">O(n^2)</strong>
+              </div>
+              <div class="meta-item">
+                <span id="info-space-label">Space</span>
+                <strong id="info-space">O(1)</strong>
+              </div>
+              <div class="meta-item">
+                <span id="info-stable-label">Stable</span>
+                <strong id="info-stable">YES</strong>
+              </div>
+              <div class="meta-item">
+                <span id="info-best-label">Best Case</span>
+                <strong id="info-best">O(n)</strong>
+              </div>
+            </div>
+
+            <div class="desc" id="info-desc">
+              Repeatedly compares adjacent elements and bubbles the largest value toward the right edge on each pass.
+            </div>
+          </div>
+
+          <div class="info-rail" aria-label="Algorithm status rail">
+            <div class="rail-item">
+              <span id="rail-run-label">Run</span>
+              <strong id="rail-state">IDLE</strong>
+            </div>
+            <div class="rail-item">
+              <span id="rail-bars-label">Bars</span>
+              <strong id="rail-size">60</strong>
+            </div>
+            <div class="rail-item">
+              <span id="rail-mode-label">Mode</span>
+              <strong id="rail-mode">RND</strong>
+            </div>
+            <div class="rail-item">
+              <span id="rail-load-label">Load</span>
+              <strong id="rail-progress">0%</strong>
+            </div>
+            <div class="rail-item">
+              <span id="rail-speed-label">Spd</span>
+              <strong id="rail-speed">07</strong>
+            </div>
+            <div class="rail-item">
+              <span id="rail-ops-label">Ops</span>
+              <strong id="rail-ops">0</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="overlay" id="screen-footer">
+        <div class="footer-card"><span id="phase-title">PHASE</span> <strong id="phase-label">DATASET READY</strong></div>
+        <div class="footer-card"><span id="action-title">ACTION</span> <strong id="action-label">SYSTEM BOOT COMPLETE</strong></div>
+      </div>
+    </div>
+
+    <aside class="sidebar">
+      <section class="terminal-card">
+        <div class="terminal-head">
+          <span id="system-monitor-title">System Monitor</span>
+          <span id="speed-readout">SPD 07</span>
+        </div>
+        <div class="terminal-body">
+          <div class="hud-grid">
+            <div class="hud-item">
+              <span id="hud-size-label">Array Size</span>
+              <strong id="hud-size">60 bars</strong>
+            </div>
+            <div class="hud-item">
+              <span id="hud-algo-label">Algorithm</span>
+              <strong id="hud-algo">Bubble Sort</strong>
+            </div>
+            <div class="hud-item">
+              <span id="hud-sorted-label">Sorted Slots</span>
+              <strong id="hud-sorted">0 / 60</strong>
+            </div>
+            <div class="hud-item">
+              <span id="hud-pivot-label">Pivot / Focus</span>
+              <strong id="hud-pivot">none</strong>
+            </div>
+            <div class="hud-item">
+              <span id="hud-highlight-label">Highlighted</span>
+              <strong id="hud-highlight">none</strong>
+            </div>
+            <div class="hud-item">
+              <span id="hud-range-label">Range Window</span>
+              <strong id="hud-range">full array</strong>
+            </div>
+          </div>
+
+          <ul class="log-list" id="log-list"></ul>
+        </div>
+      </section>
+
+      <section class="terminal-card">
+        <div class="terminal-head">
+          <span id="legend-title">Legend / Controls</span>
+          <span id="legend-subtitle">CRT HUD</span>
+        </div>
+        <div class="terminal-body">
+          <div class="legend">
+            <div class="legend-row"><span class="swatch" style="background:#1a5c1a;"></span><span id="legend-idle">Idle bars</span></div>
+            <div class="legend-row"><span class="swatch" style="background:#ffb700;"></span><span id="legend-compare">Comparison highlight</span></div>
+            <div class="legend-row"><span class="swatch" style="background:#ff5757;"></span><span id="legend-swap">Swap / write target</span></div>
+            <div class="legend-row"><span class="swatch" style="background:#ff5cf0;"></span><span id="legend-pivot">Pivot marker</span></div>
+            <div class="legend-row"><span class="swatch" style="background:#00b400;"></span><span id="legend-sorted">Locked sorted position</span></div>
+            <div class="legend-row"><span class="swatch" style="background:#56f0ff;"></span><span id="legend-range">Active range band</span></div>
+          </div>
+
+          <div class="kbd-hints">
+            <div><code>Space</code> <span id="hint-space">run or pause</span></div>
+            <div><code>S</code> <span id="hint-step">single-step</span></div>
+            <div><code>H</code> <span id="hint-halt">halt current sort</span></div>
+            <div><code>R</code> <span id="hint-reset">reset dataset</span></div>
+          </div>
+        </div>
+      </section>
+    </aside>
+  </section>
+
+  <footer>
+    <div class="controls">
+      <div class="ctrl-group">
+        <span class="ctrl-label" id="ctrl-algo-label">Algorithm</span>
+        <select id="algo-select" aria-label="Select sorting algorithm">
+          <option value="bubble">Bubble Sort</option>
+          <option value="cocktail">Cocktail Shaker Sort</option>
+          <option value="selection">Selection Sort</option>
+          <option value="insertion">Insertion Sort</option>
+          <option value="gnome">Gnome Sort</option>
+          <option value="comb">Comb Sort</option>
+          <option value="merge">Merge Sort</option>
+          <option value="quick">Quick Sort</option>
+          <option value="heap">Heap Sort</option>
+          <option value="shell">Shell Sort</option>
+          <option value="odd-even">Odd-Even Sort</option>
+          <option value="counting">Counting Sort</option>
+          <option value="radix">Radix Sort (LSD)</option>
+        </select>
+      </div>
+
+      <div class="ctrl-group">
+        <span class="ctrl-label" id="ctrl-elements-label">Elements</span>
+        <input type="range" id="size-range" min="12" max="240" value="60" />
+        <span class="value-label" id="size-label">60</span>
+      </div>
+
+      <div class="ctrl-group">
+        <span class="ctrl-label" id="ctrl-speed-label">Speed</span>
+        <input type="range" id="speed-range" min="1" max="12" value="7" />
+        <span class="value-label" id="speed-label">07</span>
+      </div>
+
+      <div class="ctrl-group">
+        <span class="ctrl-label" id="ctrl-dataset-label">Dataset</span>
+        <select id="order-select" aria-label="Select initial ordering">
+          <option value="random">Random</option>
+          <option value="nearly">Nearly Sorted</option>
+          <option value="reversed">Reversed</option>
+          <option value="few-unique">Few Unique</option>
+          <option value="organ-pipe">Organ Pipe</option>
+          <option value="sawtooth">Sawtooth</option>
+        </select>
+      </div>
+
+      <div class="button-row">
+        <button class="btn" id="btn-reset" type="button">Reset</button>
+        <button class="btn warning" id="btn-step" type="button">Step</button>
+        <button class="btn" id="btn-pause" type="button" disabled>Pause</button>
+        <button class="btn primary" id="btn-run" type="button">Start</button>
+        <button class="btn danger" id="btn-halt" type="button" disabled>Halt</button>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      <span id="footer-note-primary">Expanded algorithm pack for portfolio-ready demos</span>
+      <span id="footer-note-secondary">Single-file app • zero build step • GitHub Pages friendly</span>
+    </div>
+  </footer>
+</div>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+
+const refs = {
+  algoSelect: document.getElementById('algo-select'),
+  orderSelect: document.getElementById('order-select'),
+  langButtons: document.querySelectorAll('.lang-btn'),
+  sizeRange: document.getElementById('size-range'),
+  speedRange: document.getElementById('speed-range'),
+  sizeLabel: document.getElementById('size-label'),
+  speedLabel: document.getElementById('speed-label'),
+  speedReadout: document.getElementById('speed-readout'),
+  runBtn: document.getElementById('btn-run'),
+  pauseBtn: document.getElementById('btn-pause'),
+  stepBtn: document.getElementById('btn-step'),
+  haltBtn: document.getElementById('btn-halt'),
+  resetBtn: document.getElementById('btn-reset'),
+  runState: document.getElementById('run-state'),
+  datasetLabel: document.getElementById('dataset-label'),
+  progressLabel: document.getElementById('progress-label'),
+  cmpCount: document.getElementById('cmp-count'),
+  swpCount: document.getElementById('swp-count'),
+  readCount: document.getElementById('read-count'),
+  writeCount: document.getElementById('write-count'),
+  timeDisplay: document.getElementById('time-display'),
+  phaseLabel: document.getElementById('phase-label'),
+  actionLabel: document.getElementById('action-label'),
+  infoName: document.getElementById('info-name'),
+  infoFamily: document.getElementById('info-family'),
+  infoTime: document.getElementById('info-time'),
+  infoSpace: document.getElementById('info-space'),
+  infoStable: document.getElementById('info-stable'),
+  infoBest: document.getElementById('info-best'),
+  infoDesc: document.getElementById('info-desc'),
+  railState: document.getElementById('rail-state'),
+  railSize: document.getElementById('rail-size'),
+  railMode: document.getElementById('rail-mode'),
+  railProgress: document.getElementById('rail-progress'),
+  railSpeed: document.getElementById('rail-speed'),
+  railOps: document.getElementById('rail-ops'),
+  hudSize: document.getElementById('hud-size'),
+  hudAlgo: document.getElementById('hud-algo'),
+  hudSorted: document.getElementById('hud-sorted'),
+  hudPivot: document.getElementById('hud-pivot'),
+  hudHighlight: document.getElementById('hud-highlight'),
+  hudRange: document.getElementById('hud-range'),
+  logList: document.getElementById('log-list'),
+  canvasWrap: document.getElementById('canvas-wrap'),
+  staticText: {
+    taglineLab: document.getElementById('tagline-lab'),
+    taglineStack: document.getElementById('tagline-stack'),
+    taglineCore: document.getElementById('tagline-core'),
+    modeLabel: document.getElementById('mode-label'),
+    progressTextLabel: document.getElementById('progress-text-label'),
+    timeLabel: document.getElementById('time-label'),
+    infoTimeLabel: document.getElementById('info-time-label'),
+    infoSpaceLabel: document.getElementById('info-space-label'),
+    infoStableLabel: document.getElementById('info-stable-label'),
+    infoBestLabel: document.getElementById('info-best-label'),
+    railRunLabel: document.getElementById('rail-run-label'),
+    railBarsLabel: document.getElementById('rail-bars-label'),
+    railModeLabel: document.getElementById('rail-mode-label'),
+    railLoadLabel: document.getElementById('rail-load-label'),
+    railSpeedLabel: document.getElementById('rail-speed-label'),
+    railOpsLabel: document.getElementById('rail-ops-label'),
+    phaseTitle: document.getElementById('phase-title'),
+    actionTitle: document.getElementById('action-title'),
+    systemMonitorTitle: document.getElementById('system-monitor-title'),
+    hudSizeLabel: document.getElementById('hud-size-label'),
+    hudAlgoLabel: document.getElementById('hud-algo-label'),
+    hudSortedLabel: document.getElementById('hud-sorted-label'),
+    hudPivotLabel: document.getElementById('hud-pivot-label'),
+    hudHighlightLabel: document.getElementById('hud-highlight-label'),
+    hudRangeLabel: document.getElementById('hud-range-label'),
+    legendTitle: document.getElementById('legend-title'),
+    legendSubtitle: document.getElementById('legend-subtitle'),
+    legendIdle: document.getElementById('legend-idle'),
+    legendCompare: document.getElementById('legend-compare'),
+    legendSwap: document.getElementById('legend-swap'),
+    legendPivot: document.getElementById('legend-pivot'),
+    legendSorted: document.getElementById('legend-sorted'),
+    legendRange: document.getElementById('legend-range'),
+    hintSpace: document.getElementById('hint-space'),
+    hintStep: document.getElementById('hint-step'),
+    hintHalt: document.getElementById('hint-halt'),
+    hintReset: document.getElementById('hint-reset'),
+    ctrlAlgoLabel: document.getElementById('ctrl-algo-label'),
+    ctrlElementsLabel: document.getElementById('ctrl-elements-label'),
+    ctrlSpeedLabel: document.getElementById('ctrl-speed-label'),
+    ctrlDatasetLabel: document.getElementById('ctrl-dataset-label'),
+    footerNotePrimary: document.getElementById('footer-note-primary'),
+    footerNoteSecondary: document.getElementById('footer-note-secondary'),
+  },
+};
+
+const C = {
+  bg: '#020702',
+  grid: 'rgba(57,255,20,0.06)',
+  bar: '#123d12',
+  barTop: '#39ff14',
+  compare: '#ffb700',
+  swap: '#ff5757',
+  sorted: '#007a1c',
+  sortedTop: '#89ff76',
+  pivot: '#ff5cf0',
+  range: 'rgba(86,240,255,0.07)',
+  rangeStroke: 'rgba(86,240,255,0.18)',
+  text: 'rgba(220,255,220,0.92)',
+};
+
+const STOP_SIGNAL = Symbol('STOP_SIGNAL');
+let currentLocale = localStorage.getItem('sortvis-locale') || 'en';
+
+const I18N = {
+  en: {
+    states: { idle: 'IDLE', running: 'RUNNING', paused: 'PAUSED', halted: 'HALTED', completed: 'COMPLETE' },
+    static: {
+      taglineLab: 'Retro Sorting Lab',
+      taglineStack: 'Pure HTML + CSS + JavaScript',
+      taglineCore: 'Step-by-Step Execution Core',
+      modeLabel: 'MODE',
+      progressTextLabel: 'PROGRESS',
+      timeLabel: 'TIME',
+      infoTimeLabel: 'Time',
+      infoSpaceLabel: 'Space',
+      infoStableLabel: 'Stable',
+      infoBestLabel: 'Best Case',
+      railRunLabel: 'Run',
+      railBarsLabel: 'Bars',
+      railModeLabel: 'Mode',
+      railLoadLabel: 'Load',
+      railSpeedLabel: 'Spd',
+      railOpsLabel: 'Ops',
+      phaseTitle: 'PHASE',
+      actionTitle: 'ACTION',
+      systemMonitorTitle: 'System Monitor',
+      hudSizeLabel: 'Array Size',
+      hudAlgoLabel: 'Algorithm',
+      hudSortedLabel: 'Sorted Slots',
+      hudPivotLabel: 'Pivot / Focus',
+      hudHighlightLabel: 'Highlighted',
+      hudRangeLabel: 'Range Window',
+      legendTitle: 'Legend / Controls',
+      legendSubtitle: 'CRT HUD',
+      legendIdle: 'Idle bars',
+      legendCompare: 'Comparison highlight',
+      legendSwap: 'Swap / write target',
+      legendPivot: 'Pivot marker',
+      legendSorted: 'Locked sorted position',
+      legendRange: 'Active range band',
+      hintSpace: 'run or pause',
+      hintStep: 'single-step',
+      hintHalt: 'halt current sort',
+      hintReset: 'reset dataset',
+      ctrlAlgoLabel: 'Algorithm',
+      ctrlElementsLabel: 'Elements',
+      ctrlSpeedLabel: 'Speed',
+      ctrlDatasetLabel: 'Dataset',
+      footerNotePrimary: 'Expanded algorithm pack for portfolio-ready demos',
+      footerNoteSecondary: 'Single-file app • zero build step • GitHub Pages friendly',
+    },
+    buttons: { start: 'Start', running: 'Running', resume: 'Resume', pause: 'Pause', step: 'Step', halt: 'Halt', reset: 'Reset' },
+    common: { yes: 'YES', no: 'NO', none: 'none', fullArray: 'full array', bars: 'bars' },
+    orders: {
+      random: 'Random',
+      nearly: 'Nearly Sorted',
+      reversed: 'Reversed',
+      'few-unique': 'Few Unique',
+      'organ-pipe': 'Organ Pipe',
+      sawtooth: 'Sawtooth',
+    },
+  },
+  pt: {
+    states: { idle: 'PARADO', running: 'RODANDO', paused: 'PAUSADO', halted: 'INTERROMPIDO', completed: 'CONCLUIDO' },
+    static: {
+      taglineLab: 'Laboratorio Retro de Ordenacao',
+      taglineStack: 'HTML + CSS + JavaScript Puros',
+      taglineCore: 'Motor de Execucao Passo a Passo',
+      modeLabel: 'MODO',
+      progressTextLabel: 'PROGRESSO',
+      timeLabel: 'TEMPO',
+      infoTimeLabel: 'Tempo',
+      infoSpaceLabel: 'Espaco',
+      infoStableLabel: 'Estavel',
+      infoBestLabel: 'Melhor Caso',
+      railRunLabel: 'Exec',
+      railBarsLabel: 'Barras',
+      railModeLabel: 'Modo',
+      railLoadLabel: 'Carga',
+      railSpeedLabel: 'Vel',
+      railOpsLabel: 'Ops',
+      phaseTitle: 'FASE',
+      actionTitle: 'ACAO',
+      systemMonitorTitle: 'Monitor do Sistema',
+      hudSizeLabel: 'Tamanho do Vetor',
+      hudAlgoLabel: 'Algoritmo',
+      hudSortedLabel: 'Posicoes Ordenadas',
+      hudPivotLabel: 'Pivo / Foco',
+      hudHighlightLabel: 'Destaques',
+      hudRangeLabel: 'Janela Ativa',
+      legendTitle: 'Legenda / Controles',
+      legendSubtitle: 'HUD CRT',
+      legendIdle: 'Barras inativas',
+      legendCompare: 'Comparacao ativa',
+      legendSwap: 'Troca / escrita',
+      legendPivot: 'Marcador de pivo',
+      legendSorted: 'Posicao travada',
+      legendRange: 'Faixa ativa',
+      hintSpace: 'iniciar ou pausar',
+      hintStep: 'avanco unico',
+      hintHalt: 'interromper execucao',
+      hintReset: 'resetar conjunto',
+      ctrlAlgoLabel: 'Algoritmo',
+      ctrlElementsLabel: 'Elementos',
+      ctrlSpeedLabel: 'Velocidade',
+      ctrlDatasetLabel: 'Conjunto',
+      footerNotePrimary: 'Pacote ampliado de algoritmos para demos de portfolio',
+      footerNoteSecondary: 'App de arquivo unico • sem build • pronto para GitHub Pages',
+    },
+    buttons: { start: 'Iniciar', running: 'Rodando', resume: 'Continuar', pause: 'Pausar', step: 'Passo', halt: 'Parar', reset: 'Resetar' },
+    common: { yes: 'SIM', no: 'NAO', none: 'nenhum', fullArray: 'vetor inteiro', bars: 'barras' },
+    orders: {
+      random: 'Aleatorio',
+      nearly: 'Quase Ordenado',
+      reversed: 'Invertido',
+      'few-unique': 'Poucos Valores',
+      'organ-pipe': 'Organ Pipe',
+      sawtooth: 'Serra',
+    },
+  },
+};
+
+const ALGO_INFO = {
+  bubble: {
+    name: 'BUBBLE SORT',
+    label: 'Bubble Sort',
+    family: 'Exchange',
+    time: 'O(n^2)',
+    space: 'O(1)',
+    stable: 'YES',
+    best: 'O(n)',
+    desc: 'Sweeps adjacent pairs from left to right and keeps pushing the current maximum toward the tail.',
+  },
+  cocktail: {
+    name: 'COCKTAIL SHAKER',
+    label: 'Cocktail Shaker Sort',
+    family: 'Exchange',
+    time: 'O(n^2)',
+    space: 'O(1)',
+    stable: 'YES',
+    best: 'O(n)',
+    desc: 'A bi-directional bubble variant that walks forward and backward to settle small and large values faster.',
+  },
+  selection: {
+    name: 'SELECTION SORT',
+    label: 'Selection Sort',
+    family: 'Selection',
+    time: 'O(n^2)',
+    space: 'O(1)',
+    stable: 'NO',
+    best: 'O(n^2)',
+    desc: 'Selects the minimum from the unsorted region and places it directly into the next sorted slot.',
+  },
+  insertion: {
+    name: 'INSERTION SORT',
+    label: 'Insertion Sort',
+    family: 'Insertion',
+    time: 'O(n^2)',
+    space: 'O(1)',
+    stable: 'YES',
+    best: 'O(n)',
+    desc: 'Grows a sorted prefix and inserts each new element by shifting larger values one position to the right.',
+  },
+  gnome: {
+    name: 'GNOME SORT',
+    label: 'Gnome Sort',
+    family: 'Exchange',
+    time: 'O(n^2)',
+    space: 'O(1)',
+    stable: 'YES',
+    best: 'O(n)',
+    desc: 'Walks like insertion sort without a temp buffer: if neighbors are out of order it steps backward and swaps.',
+  },
+  comb: {
+    name: 'COMB SORT',
+    label: 'Comb Sort',
+    family: 'Gap Exchange',
+    time: 'O(n^2)',
+    space: 'O(1)',
+    stable: 'NO',
+    best: 'O(n log n)',
+    desc: 'Eliminates turtles by comparing entries far apart, then gradually shrinking the gap until it becomes bubble sort.',
+  },
+  merge: {
+    name: 'MERGE SORT',
+    label: 'Merge Sort',
+    family: 'Divide and Conquer',
+    time: 'O(n log n)',
+    space: 'O(n)',
+    stable: 'YES',
+    best: 'O(n log n)',
+    desc: 'Splits the array recursively, sorts the halves, then merges them back into a globally ordered range.',
+  },
+  quick: {
+    name: 'QUICK SORT',
+    label: 'Quick Sort',
+    family: 'Divide and Conquer',
+    time: 'O(n log n) avg',
+    space: 'O(log n)',
+    stable: 'NO',
+    best: 'O(n log n)',
+    desc: 'Partitions values around a pivot and recurses into the two resulting regions until every pivot locks in place.',
+  },
+  heap: {
+    name: 'HEAP SORT',
+    label: 'Heap Sort',
+    family: 'Heap',
+    time: 'O(n log n)',
+    space: 'O(1)',
+    stable: 'NO',
+    best: 'O(n log n)',
+    desc: 'Builds a max-heap, then repeatedly extracts the largest item into the final sorted suffix.',
+  },
+  shell: {
+    name: 'SHELL SORT',
+    label: 'Shell Sort',
+    family: 'Gap Insertion',
+    time: 'O(n log^2 n)',
+    space: 'O(1)',
+    stable: 'NO',
+    best: 'O(n log n)',
+    desc: 'Applies insertion-sort passes over shrinking gaps so distant inversions disappear before the final pass.',
+  },
+  'odd-even': {
+    name: 'ODD-EVEN SORT',
+    label: 'Odd-Even Sort',
+    family: 'Parallel-friendly Exchange',
+    time: 'O(n^2)',
+    space: 'O(1)',
+    stable: 'YES',
+    best: 'O(n)',
+    desc: 'Alternates between odd-index and even-index neighbor comparisons until an entire cycle completes without swaps.',
+  },
+  counting: {
+    name: 'COUNTING SORT',
+    label: 'Counting Sort',
+    family: 'Distribution',
+    time: 'O(n + k)',
+    space: 'O(k)',
+    stable: 'YES',
+    best: 'O(n + k)',
+    desc: 'Counts the frequency of each value, computes positions, then writes a stable ordered output back to the array.',
+  },
+  radix: {
+    name: 'RADIX SORT LSD',
+    label: 'Radix Sort (LSD)',
+    family: 'Distribution',
+    time: 'O(d * (n + b))',
+    space: 'O(n + b)',
+    stable: 'YES',
+    best: 'O(d * (n + b))',
+    desc: 'Processes one digit at a time from least significant to most significant using stable counting passes.',
+  },
+};
+
+const ALGO_LOCALIZATION = {
+  bubble: {
+    pt: {
+      name: 'ORDENACAO BOLHA',
+      label: 'Ordenacao Bolha',
+      family: 'Troca',
+      stable: 'SIM',
+      desc: 'Varre pares adjacentes da esquerda para a direita e empurra o maior valor para o final a cada passada.',
+    },
+  },
+  cocktail: {
+    pt: {
+      name: 'COQUETELEIRA',
+      label: 'Coqueteleira',
+      family: 'Troca',
+      stable: 'SIM',
+      desc: 'Uma variacao bidirecional da bolha que anda para frente e para tras para posicionar pequenos e grandes valores mais cedo.',
+    },
+  },
+  selection: {
+    pt: {
+      name: 'ORDENACAO SELECAO',
+      label: 'Ordenacao Selecao',
+      family: 'Selecao',
+      stable: 'NAO',
+      desc: 'Seleciona o menor elemento da regiao nao ordenada e o coloca diretamente na proxima posicao fixa.',
+    },
+  },
+  insertion: {
+    pt: {
+      name: 'ORDENACAO INSERCAO',
+      label: 'Ordenacao Insercao',
+      family: 'Insercao',
+      stable: 'SIM',
+      desc: 'Expande um prefixo ordenado e insere cada novo elemento deslocando valores maiores uma casa para a direita.',
+    },
+  },
+  gnome: {
+    pt: {
+      name: 'GNOME SORT',
+      label: 'Gnome Sort',
+      family: 'Troca',
+      stable: 'SIM',
+      desc: 'Age como a insercao sem buffer temporario: se vizinhos estao fora de ordem, recua um passo e troca.',
+    },
+  },
+  comb: {
+    pt: {
+      name: 'COMB SORT',
+      label: 'Comb Sort',
+      family: 'Troca com Gap',
+      stable: 'NAO',
+      desc: 'Elimina tartarugas comparando elementos distantes e reduzindo o gap ate chegar perto do comportamento da bolha.',
+    },
+  },
+  merge: {
+    pt: {
+      name: 'MERGE SORT',
+      label: 'Merge Sort',
+      family: 'Divisao e Conquista',
+      stable: 'SIM',
+      desc: 'Divide o vetor recursivamente, ordena as metades e mescla tudo de volta em uma faixa globalmente ordenada.',
+    },
+  },
+  quick: {
+    pt: {
+      name: 'QUICK SORT',
+      label: 'Quick Sort',
+      family: 'Divisao e Conquista',
+      stable: 'NAO',
+      desc: 'Particiona os valores ao redor de um pivo e recursa nas regioes resultantes ate travar cada pivo.',
+    },
+  },
+  heap: {
+    pt: {
+      name: 'HEAP SORT',
+      label: 'Heap Sort',
+      family: 'Heap',
+      stable: 'NAO',
+      desc: 'Monta um max-heap e extrai repetidamente o maior elemento para preencher o sufixo final ordenado.',
+    },
+  },
+  shell: {
+    pt: {
+      name: 'SHELL SORT',
+      label: 'Shell Sort',
+      family: 'Insercao com Gap',
+      stable: 'NAO',
+      desc: 'Aplica passadas de insercao com gaps decrescentes para remover inversoes distantes antes do passo final.',
+    },
+  },
+  'odd-even': {
+    pt: {
+      name: 'ODD-EVEN SORT',
+      label: 'Odd-Even Sort',
+      family: 'Troca Paralelizavel',
+      stable: 'SIM',
+      desc: 'Alterna comparacoes entre pares impares e pares pares ate fechar um ciclo completo sem trocas.',
+    },
+  },
+  counting: {
+    pt: {
+      name: 'COUNTING SORT',
+      label: 'Counting Sort',
+      family: 'Distribuicao',
+      stable: 'SIM',
+      desc: 'Conta a frequencia de cada valor, calcula posicoes e escreve uma saida estavel de volta no vetor.',
+    },
+  },
+  radix: {
+    pt: {
+      name: 'RADIX SORT LSD',
+      label: 'Radix Sort (LSD)',
+      family: 'Distribuicao',
+      stable: 'SIM',
+      desc: 'Processa um digito por vez, do menos significativo ao mais significativo, usando passadas estaveis de contagem.',
+    },
+  },
+};
+
+let arr = [];
+let N = 60;
+let comparisons = 0;
+let swaps = 0;
+let reads = 0;
+let writes = 0;
+let highlight = new Set();
+let swapSet = new Set();
+let sortedSet = new Set();
+let pivotIdx = -1;
+let activeRange = null;
+let running = false;
+let paused = false;
+let stopFlag = false;
+let manualStepRequests = 0;
+let runState = 'idle';
+let phaseMessage = localizePhrase('DATASET READY');
+let actionMessage = localizePhrase('SYSTEM BOOT COMPLETE');
+let elapsedMs = 0;
+let clockStartedAt = 0;
+let clockTimer = null;
+let flowResolver = null;
+let logs = [];
+let dpr = Math.max(1, window.devicePixelRatio || 1);
+
+function pad2(value) {
+  return String(value).padStart(2, '0');
+}
+
+function t(path) {
+  return path.split('.').reduce((value, part) => value?.[part], I18N[currentLocale]) ?? path;
+}
+
+function getLocalizedAlgoInfo(key) {
+  return { ...ALGO_INFO[key], ...(ALGO_LOCALIZATION[key]?.[currentLocale] || {}) };
+}
+
+function getOrderLabel(value) {
+  return I18N[currentLocale].orders[value] || value;
+}
+
+function localizePhrase(message) {
+  if (currentLocale === 'en') return message;
+
+  const exact = {
+    'DATASET READY': 'CONJUNTO PRONTO',
+    'SYSTEM BOOT COMPLETE': 'SISTEMA INICIALIZADO',
+    'EXECUTING SORT': 'EXECUTANDO ORDENACAO',
+    'STEP MODE ARMED': 'MODO PASSO ARMADO',
+    'SORT COMPLETE': 'ORDENACAO CONCLUIDA',
+    'EXECUTION HALTED': 'EXECUCAO INTERROMPIDA',
+    'RUN ABORTED BY USER': 'EXECUCAO INTERROMPIDA PELO USUARIO',
+    RESUMING: 'RETOMANDO',
+    PAUSED: 'PAUSADO',
+    'WAITING FOR RESUME OR STEP': 'AGUARDANDO CONTINUAR OU PASSO',
+    STEP: 'PASSO',
+    'ADVANCE ONE OPERATION': 'AVANCAR UMA OPERACAO',
+    HALTING: 'INTERROMPENDO',
+    'STOP SIGNAL SENT': 'SINAL DE PARADA ENVIADO',
+    'ALGORITHM UPDATED': 'ALGORITMO ATUALIZADO',
+    'BUBBLE PASS': 'PASSADA BOLHA',
+    'BUBBLE SWAP': 'TROCA BOLHA',
+    'COCKTAIL FORWARD': 'IDA COQUETELEIRA',
+    'SHAKER SWAP': 'TROCA COQUETELEIRA',
+    'COCKTAIL BACKWARD': 'VOLTA COQUETELEIRA',
+    'SELECTION SCAN': 'VARREDURA SELECAO',
+    'PLACE MINIMUM': 'POSICIONAR MINIMO',
+    'MINIMUM ALREADY LOCKED': 'MINIMO JA TRAVADO',
+    'PICK KEY': 'SELECIONAR CHAVE',
+    'INSERTION CHECK': 'CHECAR INSERCAO',
+    'SHIFT RIGHT': 'DESLOCAR DIREITA',
+    'INSERT KEY': 'INSERIR CHAVE',
+    'GNOME CHECK': 'CHECAR GNOME',
+    'GNOME SWAP': 'TROCA GNOME',
+    'MERGE COMPARE': 'COMPARAR MERGE',
+    'MERGE LEFT': 'MERGE ESQUERDA',
+    'MERGE RIGHT': 'MERGE DIREITA',
+    'FLUSH LEFT': 'DESCARREGAR ESQUERDA',
+    'FLUSH RIGHT': 'DESCARREGAR DIREITA',
+    'PARTITION SCAN': 'VARREDURA PARTICAO',
+    'PARTITION SWAP': 'TROCA PARTICAO',
+    'LOCK PIVOT': 'TRAVAR PIVO',
+    'EXTRACT MAX': 'EXTRAIR MAXIMO',
+    'HEAP LEFT': 'HEAP ESQUERDA',
+    'HEAP RIGHT': 'HEAP DIREITA',
+    'HEAPIFY SWAP': 'TROCA HEAPIFY',
+    'ODD PASS': 'PASSO IMPAR',
+    'EVEN PASS': 'PASSO PAR',
+    'ODD-EVEN SWAP': 'TROCA IMPAR-PAR',
+    'COUNT FREQUENCIES': 'CONTAR FREQUENCIAS',
+    'BUILD OUTPUT': 'MONTAR SAIDA',
+    'WRITE OUTPUT': 'ESCREVER SAIDA',
+  }[message];
+
+  if (exact) return exact;
+
+  const dynamic = [
+    [/^READY FOR (.+)$/, (_, value) => `PRONTO PARA ${value}`],
+    [/^ENGAGING (.+)$/, (_, value) => `INICIANDO ${value}`],
+    [/^RESUME (.+)$/, (_, value) => `RETOMAR ${value}`],
+    [/^COMB GAP (\d+)$/, (_, gap) => `GAP COMB ${gap}`],
+    [/^GAP (\d+) PICKUP$/, (_, gap) => `CAPTURA GAP ${gap}`],
+    [/^GAP (\d+) CHECK$/, (_, gap) => `CHECAGEM GAP ${gap}`],
+    [/^GAP (\d+) SHIFT$/, (_, gap) => `DESLOCAMENTO GAP ${gap}`],
+    [/^GAP (\d+) INSERT$/, (_, gap) => `INSERCAO GAP ${gap}`],
+    [/^COUNT DIGIT x(.+)$/, (_, exp) => `CONTAR DIGITO x${exp}`],
+    [/^BUCKET DIGIT x(.+)$/, (_, exp) => `AGRUPAR DIGITO x${exp}`],
+    [/^WRITE DIGIT x(.+)$/, (_, exp) => `ESCREVER DIGITO x${exp}`],
+  ];
+
+  for (const [pattern, formatter] of dynamic) {
+    const match = message.match(pattern);
+    if (match) return formatter(...match);
+  }
+
+  return message;
+}
+
+function localizeLogMessage(message) {
+  if (currentLocale === 'en') return message;
+
+  const dynamic = [
+    [/^Dataset regenerated :: (.+)$/, (_, value) => `Conjunto regenerado :: ${value}`],
+    [/^Algorithm set :: (.+)$/, (_, value) => `Algoritmo definido :: ${value}`],
+    [/^Array size set :: (\d+)$/, (_, value) => `Tamanho definido :: ${value}`],
+    [/^Comb gap (\d+)$/, (_, gap) => `Gap comb ${gap}`],
+    [/^Shell gap (\d+)$/, (_, gap) => `Gap shell ${gap}`],
+    [/^Odd-even cycle (\d+)$/, (_, cycle) => `Ciclo odd-even ${cycle}`],
+    [/^Counting range (.+)$/, (_, range) => `Faixa counting ${range}`],
+    [/^Radix digit (.+)$/, (_, exp) => `Digito radix ${exp}`],
+    [/^(.+) engaged$/, (_, value) => `${value} iniciado`],
+    [/^(.+) completed$/, (_, value) => `${value} concluido`],
+  ];
+
+  const exact = {
+    'System boot complete': 'Sistema inicializado',
+    'Expanded algorithm pack loaded': 'Pacote ampliado de algoritmos carregado',
+    'Dataset ready': 'Conjunto pronto',
+    'Execution halted': 'Execucao interrompida',
+    'Execution resumed': 'Execucao retomada',
+    'Execution paused': 'Execucao pausada',
+    'Single-step mode started': 'Modo passo iniciado',
+    'Single-step advance': 'Avanco unico',
+    'Reset completed': 'Reset concluido',
+  }[message];
+
+  if (exact) return exact;
+
+  for (const [pattern, formatter] of dynamic) {
+    const match = message.match(pattern);
+    if (match) return formatter(...match);
+  }
+
+  return message;
+}
+
+function updateStaticText() {
+  Object.entries(I18N[currentLocale].static).forEach(([key, value]) => {
+    if (refs.staticText[key]) refs.staticText[key].textContent = value;
+  });
+
+  refs.orderSelect.querySelectorAll('option').forEach((option) => {
+    option.textContent = getOrderLabel(option.value);
+  });
+
+  refs.algoSelect.querySelectorAll('option').forEach((option) => {
+    option.textContent = getLocalizedAlgoInfo(option.value).label;
+  });
+
+  refs.langButtons.forEach((button) => {
+    button.classList.toggle('is-active', button.dataset.locale === currentLocale);
+  });
+
+  document.documentElement.lang = currentLocale === 'pt' ? 'pt-BR' : 'en';
+}
+
+function setLocale(locale) {
+  currentLocale = locale;
+  localStorage.setItem('sortvis-locale', locale);
+  updateStaticText();
+  refs.runState.textContent = t(`states.${runState}`);
+  if (runState === 'idle') {
+    phaseMessage = localizePhrase('DATASET READY');
+    actionMessage = localizePhrase(`READY FOR ${getLocalizedAlgoInfo(refs.algoSelect.value).name}`);
+  }
+  updateAlgoInfo();
+  updateButtons();
+  updateHUD();
+}
+
+function pushLog(message) {
+  const stamp = new Date().toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  });
+  logs.unshift(`${stamp} :: ${localizeLogMessage(message)}`);
+  logs = logs.slice(0, 6);
+  renderLogs();
+}
+
+function renderLogs() {
+  refs.logList.textContent = '';
+  logs.forEach((entry) => {
+    const item = document.createElement('li');
+    item.textContent = entry;
+    refs.logList.appendChild(item);
+  });
+}
+
+function setRunState(nextState) {
+  runState = nextState;
+  refs.runState.textContent = t(`states.${nextState}`);
+}
+
+function startClock() {
+  if (clockTimer) return;
+  clockStartedAt = performance.now() - elapsedMs;
+  clockTimer = setInterval(updateHUD, 50);
+}
+
+function stopClock() {
+  if (!clockTimer) return;
+  clearInterval(clockTimer);
+  clockTimer = null;
+  elapsedMs = performance.now() - clockStartedAt;
+}
+
+function resetClock() {
+  if (clockTimer) {
+    clearInterval(clockTimer);
+    clockTimer = null;
+  }
+  elapsedMs = 0;
+}
+
+function releaseFlow() {
+  if (!flowResolver) return;
+  const resolve = flowResolver;
+  flowResolver = null;
+  resolve();
+}
+
+function highlightText(setRef) {
+  if (!setRef.size) return t('common.none');
+  return [...setRef].slice(0, 5).join(', ');
+}
+
+function rangeText() {
+  if (!activeRange) return t('common.fullArray');
+  return `${activeRange.start}..${activeRange.end}`;
+}
+
+function currentProgress() {
+  if (!arr.length) return 0;
+  if (runState === 'completed') return 100;
+  return Math.round((sortedSet.size / arr.length) * 100);
+}
+
+function updateHUD() {
+  const elapsed = clockTimer ? performance.now() - clockStartedAt : elapsedMs;
+  const algoKey = refs.algoSelect.value;
+  const algo = getLocalizedAlgoInfo(algoKey);
+  const datasetText = refs.orderSelect.selectedOptions[0].textContent.toUpperCase();
+  const progressText = `${currentProgress()}%`;
+  const totalOps = comparisons + swaps + writes;
+
+  refs.datasetLabel.textContent = datasetText;
+  refs.progressLabel.textContent = progressText;
+  refs.cmpCount.textContent = comparisons.toLocaleString();
+  refs.swpCount.textContent = swaps.toLocaleString();
+  refs.readCount.textContent = reads.toLocaleString();
+  refs.writeCount.textContent = writes.toLocaleString();
+  refs.timeDisplay.textContent = `${(elapsed / 1000).toFixed(3)}s`;
+  refs.phaseLabel.textContent = phaseMessage;
+  refs.actionLabel.textContent = actionMessage;
+  refs.speedLabel.textContent = pad2(refs.speedRange.value);
+  refs.speedReadout.textContent = currentLocale === 'pt' ? `VEL ${pad2(refs.speedRange.value)}` : `SPD ${pad2(refs.speedRange.value)}`;
+  refs.sizeLabel.textContent = String(N);
+  refs.railState.textContent = t(`states.${runState}`);
+  refs.railSize.textContent = String(N);
+  refs.railMode.textContent = datasetText.replace(/\s+/g, ' ').slice(0, 8);
+  refs.railProgress.textContent = progressText;
+  refs.railSpeed.textContent = pad2(refs.speedRange.value);
+  refs.railOps.textContent = totalOps.toLocaleString();
+  refs.hudSize.textContent = `${N} ${t('common.bars')}`;
+  refs.hudAlgo.textContent = algo.label;
+  refs.hudSorted.textContent = `${sortedSet.size} / ${arr.length || 0}`;
+  refs.hudPivot.textContent = pivotIdx >= 0 ? `${currentLocale === 'pt' ? 'indice' : 'index'} ${pivotIdx}` : t('common.none');
+  refs.hudHighlight.textContent = highlightText(new Set([...highlight, ...swapSet]));
+  refs.hudRange.textContent = rangeText();
+}
+
+function updateAlgoInfo() {
+  const info = getLocalizedAlgoInfo(refs.algoSelect.value);
+  refs.infoName.textContent = info.name;
+  refs.infoFamily.textContent = info.family;
+  refs.infoTime.textContent = info.time;
+  refs.infoSpace.textContent = info.space;
+  refs.infoStable.textContent = info.stable;
+  refs.infoBest.textContent = info.best;
+  refs.infoDesc.textContent = info.desc;
+  updateHUD();
+}
+
+function updateButtons() {
+  refs.runBtn.textContent = running ? (paused ? t('buttons.resume') : t('buttons.running')) : t('buttons.start');
+  refs.pauseBtn.textContent = t('buttons.pause');
+  refs.stepBtn.textContent = t('buttons.step');
+  refs.haltBtn.textContent = t('buttons.halt');
+  refs.resetBtn.textContent = t('buttons.reset');
+  refs.runBtn.disabled = running && !paused;
+  refs.pauseBtn.disabled = !running || paused;
+  refs.stepBtn.disabled = running && !paused;
+  refs.haltBtn.disabled = !running;
+  refs.resetBtn.disabled = running;
+}
+
+function lockControls(locked) {
+  refs.algoSelect.disabled = locked;
+  refs.orderSelect.disabled = locked;
+  refs.sizeRange.disabled = locked;
+}
+
+function resetCounters() {
+  comparisons = 0;
+  swaps = 0;
+  reads = 0;
+  writes = 0;
+  highlight = new Set();
+  swapSet = new Set();
+  sortedSet = new Set();
+  pivotIdx = -1;
+  activeRange = null;
+}
+
+function shuffleArray(source) {
+  const next = [...source];
+  for (let i = next.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [next[i], next[j]] = [next[j], next[i]];
+  }
+  return next;
+}
+
+function buildDataset(order) {
+  const sorted = Array.from({ length: N }, (_, index) => index + 1);
+
+  switch (order) {
+    case 'random':
+      return shuffleArray(sorted);
+    case 'nearly': {
+      const data = [...sorted];
+      const swapsToApply = Math.max(1, Math.floor(N * 0.12));
+      for (let i = 0; i < swapsToApply; i += 1) {
+        const a = Math.floor(Math.random() * N);
+        const b = Math.floor(Math.random() * N);
+        [data[a], data[b]] = [data[b], data[a]];
+      }
+      return data;
+    }
+    case 'reversed':
+      return [...sorted].reverse();
+    case 'few-unique': {
+      const bucketCount = Math.max(4, Math.min(10, Math.round(N / 10)));
+      return Array.from({ length: N }, () => 1 + Math.floor(Math.random() * bucketCount));
+    }
+    case 'organ-pipe':
+      return Array.from({ length: N }, (_, index) => {
+        const mid = Math.floor((N - 1) / 2);
+        return index <= mid ? index + 1 : N - index;
+      });
+    case 'sawtooth': {
+      const teeth = Math.max(4, Math.min(18, Math.round(N / 9)));
+      return Array.from({ length: N }, (_, index) => (index % teeth) + 1);
+    }
+    default:
+      return shuffleArray(sorted);
+  }
+}
+
+function generateArray({ announce = true } = {}) {
+  arr = buildDataset(refs.orderSelect.value);
+  resetCounters();
+  resetClock();
+  setRunState('idle');
+  phaseMessage = localizePhrase('DATASET READY');
+  actionMessage = localizePhrase(`READY FOR ${getLocalizedAlgoInfo(refs.algoSelect.value).name}`);
+  if (announce) {
+    pushLog(`Dataset regenerated :: ${refs.orderSelect.selectedOptions[0].textContent}`);
+  }
+  updateHUD();
+  updateButtons();
+  draw();
+}
+
+function resizeCanvas() {
+  dpr = Math.max(1, window.devicePixelRatio || 1);
+  const width = refs.canvasWrap.clientWidth;
+  const height = refs.canvasWrap.clientHeight;
+  canvas.width = Math.floor(width * dpr);
+  canvas.height = Math.floor(height * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  draw();
+}
+
+function drawGrid(width, height) {
+  ctx.save();
+  ctx.strokeStyle = C.grid;
+  ctx.lineWidth = 1;
+
+  for (let y = height - 24; y >= 24; y -= 36) {
+    ctx.beginPath();
+    ctx.moveTo(0, y + 0.5);
+    ctx.lineTo(width, y + 0.5);
+    ctx.stroke();
+  }
+
+  const divisions = Math.max(6, Math.floor(width / 120));
+  for (let i = 1; i < divisions; i += 1) {
+    const x = (width / divisions) * i;
+    ctx.beginPath();
+    ctx.moveTo(x + 0.5, 0);
+    ctx.lineTo(x + 0.5, height);
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
+function draw() {
+  const width = canvas.width / dpr;
+  const height = canvas.height / dpr;
+  ctx.clearRect(0, 0, width, height);
+
+  ctx.fillStyle = C.bg;
+  ctx.fillRect(0, 0, width, height);
+  drawGrid(width, height);
+
+  if (!arr.length) return;
+
+  const maxValue = Math.max(...arr);
+  const barWidth = width / arr.length;
+  const pad = Math.max(1, barWidth * 0.14);
+
+  if (activeRange) {
+    const rangeX = activeRange.start * barWidth;
+    const rangeW = (activeRange.end - activeRange.start + 1) * barWidth;
+    ctx.fillStyle = C.range;
+    ctx.fillRect(rangeX, 0, rangeW, height);
+    ctx.strokeStyle = C.rangeStroke;
+    ctx.strokeRect(rangeX + 0.5, 0.5, Math.max(0, rangeW - 1), height - 1);
+  }
+
+  for (let i = 0; i < arr.length; i += 1) {
+    const x = i * barWidth;
+    const normalized = maxValue === 0 ? 0 : arr[i] / maxValue;
+    const barHeight = Math.max(3, normalized * (height - 36));
+    const y = height - barHeight - 8;
+
+    let fillColor = C.bar;
+    let topColor = C.barTop;
+
+    if (sortedSet.has(i)) {
+      fillColor = C.sorted;
+      topColor = C.sortedTop;
+    }
+    if (i === pivotIdx) {
+      fillColor = '#4b0d4f';
+      topColor = C.pivot;
+    }
+    if (highlight.has(i)) {
+      fillColor = '#544000';
+      topColor = C.compare;
+    }
+    if (swapSet.has(i)) {
+      fillColor = '#4d0f0f';
+      topColor = C.swap;
+    }
+
+    ctx.fillStyle = fillColor;
+    ctx.fillRect(x + pad, y + 3, barWidth - pad * 2, barHeight - 3);
+
+    ctx.fillStyle = topColor;
+    ctx.fillRect(x + pad, y, barWidth - pad * 2, 3);
+
+    if (highlight.has(i) || swapSet.has(i) || i === pivotIdx) {
+      ctx.save();
+      ctx.shadowColor = topColor;
+      ctx.shadowBlur = 10;
+      ctx.fillStyle = topColor;
+      ctx.fillRect(x + pad, y, barWidth - pad * 2, 3);
+      ctx.restore();
+    }
+
+    if (arr.length <= 28 && barWidth > 18) {
+      ctx.fillStyle = C.text;
+      ctx.font = '11px "Share Tech Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(String(arr[i]), x + barWidth / 2, Math.max(16, y - 6));
+    }
+  }
+}
+
+function getDelay(multiplier = 1) {
+  const speed = Number(refs.speedRange.value);
+  const base = 420 / Math.pow(1.58, speed - 1);
+  const sizeFactor = N >= 160 ? 0.72 : N >= 100 ? 0.84 : 1;
+  return Math.max(4, Math.round(base * sizeFactor * multiplier));
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function waitForFlowControl() {
+  if (stopFlag) throw STOP_SIGNAL;
+
+  if (!paused) {
+    startClock();
+    return;
+  }
+
+  if (manualStepRequests > 0) {
+    manualStepRequests -= 1;
+    startClock();
+    return;
+  }
+
+  stopClock();
+  await new Promise((resolve) => {
+    flowResolver = resolve;
+  });
+  flowResolver = null;
+
+  if (stopFlag) throw STOP_SIGNAL;
+  return waitForFlowControl();
+}
+
+async function renderStep(multiplier = 1) {
+  draw();
+  updateHUD();
+  await sleep(getDelay(multiplier));
+  if (stopFlag) throw STOP_SIGNAL;
+}
+
+function markAllSorted() {
+  sortedSet = new Set(arr.map((_, index) => index));
+}
+
+function setRange(start, end) {
+  if (start > end) {
+    activeRange = null;
+    return;
+  }
+  activeRange = { start, end };
+}
+
+async function vFocus(indices, note, multiplier = 0.72) {
+  await waitForFlowControl();
+  highlight = new Set(indices.filter((index) => index >= 0));
+  swapSet = new Set();
+  phaseMessage = localizePhrase(note);
+  actionMessage = localizePhrase(note);
+  await renderStep(multiplier);
+}
+
+async function vCompareValues(leftIndex, rightIndex, leftValue, rightValue, note) {
+  await waitForFlowControl();
+  comparisons += 1;
+  reads += 2;
+  highlight = new Set([leftIndex, rightIndex].filter((index) => index >= 0));
+  swapSet = new Set();
+  phaseMessage = localizePhrase(note);
+  actionMessage = currentLocale === 'pt' ? `COMPARAR ${leftValue} VS ${rightValue}` : `COMPARE ${leftValue} VS ${rightValue}`;
+  await renderStep();
+  return leftValue - rightValue;
+}
+
+async function vCompare(i, j, note) {
+  return vCompareValues(i, j, arr[i], arr[j], note);
+}
+
+async function vSwap(i, j, note) {
+  await waitForFlowControl();
+  swaps += 1;
+  reads += 2;
+  writes += 2;
+  highlight = new Set([i, j]);
+  swapSet = new Set([i, j]);
+  phaseMessage = localizePhrase(note);
+  actionMessage = i === j
+    ? (currentLocale === 'pt' ? `MANTER INDICE ${i}` : `KEEP INDEX ${i}`)
+    : (currentLocale === 'pt' ? `TROCAR A[${i}] COM A[${j}]` : `SWAP A[${i}] WITH A[${j}]`);
+  [arr[i], arr[j]] = [arr[j], arr[i]];
+  await renderStep();
+  swapSet = new Set();
+}
+
+async function vWrite(index, value, sourceIndices, note, multiplier = 0.86) {
+  await waitForFlowControl();
+  writes += 1;
+  reads += sourceIndices.length;
+  highlight = new Set(sourceIndices.filter((item) => item >= 0));
+  swapSet = new Set([index]);
+  phaseMessage = localizePhrase(note);
+  actionMessage = currentLocale === 'pt' ? `ESCREVER ${value} -> A[${index}]` : `WRITE ${value} -> A[${index}]`;
+  arr[index] = value;
+  await renderStep(multiplier);
+  swapSet = new Set();
+}
+
+async function bubbleSort() {
+  for (let end = arr.length - 1; end > 0; end -= 1) {
+    let moved = false;
+    setRange(0, end);
+    for (let j = 0; j < end; j += 1) {
+      if ((await vCompare(j, j + 1, 'BUBBLE PASS')) > 0) {
+        await vSwap(j, j + 1, 'BUBBLE SWAP');
+        moved = true;
+      }
+    }
+    sortedSet.add(end);
+    if (!moved) break;
+  }
+  markAllSorted();
+  setRange(0, arr.length - 1);
+}
+
+async function cocktailSort() {
+  let start = 0;
+  let end = arr.length - 1;
+  let moved = true;
+
+  while (moved && start < end) {
+    moved = false;
+    setRange(start, end);
+    for (let i = start; i < end; i += 1) {
+      if ((await vCompare(i, i + 1, 'COCKTAIL FORWARD')) > 0) {
+        await vSwap(i, i + 1, 'SHAKER SWAP');
+        moved = true;
+      }
+    }
+    sortedSet.add(end);
+    end -= 1;
+
+    if (!moved) break;
+
+    moved = false;
+    setRange(start, end);
+    for (let i = end; i > start; i -= 1) {
+      if ((await vCompare(i - 1, i, 'COCKTAIL BACKWARD')) > 0) {
+        await vSwap(i - 1, i, 'SHAKER SWAP');
+        moved = true;
+      }
+    }
+    sortedSet.add(start);
+    start += 1;
+  }
+
+  markAllSorted();
+  setRange(0, arr.length - 1);
+}
+
+async function selectionSort() {
+  for (let i = 0; i < arr.length - 1; i += 1) {
+    let minIndex = i;
+    pivotIdx = minIndex;
+    setRange(i, arr.length - 1);
+
+    for (let j = i + 1; j < arr.length; j += 1) {
+      if ((await vCompare(j, minIndex, 'SELECTION SCAN')) < 0) {
+        minIndex = j;
+        pivotIdx = minIndex;
+      }
+    }
+
+    if (minIndex !== i) {
+      await vSwap(i, minIndex, 'PLACE MINIMUM');
+    } else {
+      await vFocus([i], 'MINIMUM ALREADY LOCKED', 0.5);
+    }
+
+    sortedSet.add(i);
+  }
+
+  pivotIdx = -1;
+  markAllSorted();
+  setRange(0, arr.length - 1);
+}
+
+async function insertionSort() {
+  sortedSet.add(0);
+
+  for (let i = 1; i < arr.length; i += 1) {
+    setRange(0, i);
+    const key = arr[i];
+    reads += 1;
+    await vFocus([i], 'PICK KEY', 0.58);
+    let j = i - 1;
+
+    while (j >= 0) {
+      const comparison = await vCompareValues(j, i, arr[j], key, 'INSERTION CHECK');
+      if (comparison > 0) {
+        await vWrite(j + 1, arr[j], [j], 'SHIFT RIGHT');
+        j -= 1;
+      } else {
+        break;
+      }
+    }
+
+    await vWrite(j + 1, key, [i], 'INSERT KEY');
+    sortedSet = new Set(Array.from({ length: i + 1 }, (_, index) => index));
+  }
+
+  markAllSorted();
+  setRange(0, arr.length - 1);
+}
+
+async function gnomeSort() {
+  let index = 1;
+  sortedSet.add(0);
+
+  while (index < arr.length) {
+    setRange(0, Math.max(index, 1));
+    if (index === 0) {
+      index = 1;
+      continue;
+    }
+
+    if ((await vCompare(index - 1, index, 'GNOME CHECK')) <= 0) {
+      sortedSet.add(index - 1);
+      index += 1;
+    } else {
+      await vSwap(index - 1, index, 'GNOME SWAP');
+      index -= 1;
+    }
+  }
+
+  markAllSorted();
+  setRange(0, arr.length - 1);
+}
+
+async function combSort() {
+  let gap = arr.length;
+  const shrink = 1.3;
+  let moved = true;
+
+  while (gap > 1 || moved) {
+    gap = Math.max(1, Math.floor(gap / shrink));
+    moved = false;
+    pushLog(`Comb gap ${gap}`);
+
+    for (let i = 0; i + gap < arr.length; i += 1) {
+      setRange(i, i + gap);
+      if ((await vCompare(i, i + gap, `COMB GAP ${gap}`)) > 0) {
+        await vSwap(i, i + gap, 'COMB SWAP');
+        moved = true;
+      }
+    }
+  }
+
+  markAllSorted();
+  setRange(0, arr.length - 1);
+}
+
+async function mergeSort() {
+  await mergeSortRange(0, arr.length - 1);
+  markAllSorted();
+  setRange(0, arr.length - 1);
+}
+
+async function mergeSortRange(left, right) {
+  if (left >= right) return;
+
+  const mid = Math.floor((left + right) / 2);
+  await mergeSortRange(left, mid);
+  await mergeSortRange(mid + 1, right);
+  await mergeRanges(left, mid, right);
+}
+
+async function mergeRanges(left, mid, right) {
+  setRange(left, right);
+
+  const leftItems = arr.slice(left, mid + 1).map((value, offset) => ({
+    value,
+    source: left + offset,
+  }));
+  const rightItems = arr.slice(mid + 1, right + 1).map((value, offset) => ({
+    value,
+    source: mid + 1 + offset,
+  }));
+
+  let li = 0;
+  let ri = 0;
+  let writeIndex = left;
+
+  while (li < leftItems.length && ri < rightItems.length) {
+    const cmp = await vCompareValues(
+      leftItems[li].source,
+      rightItems[ri].source,
+      leftItems[li].value,
+      rightItems[ri].value,
+      'MERGE COMPARE'
+    );
+
+    if (cmp <= 0) {
+      await vWrite(writeIndex, leftItems[li].value, [leftItems[li].source], 'MERGE LEFT');
+      li += 1;
+    } else {
+      await vWrite(writeIndex, rightItems[ri].value, [rightItems[ri].source], 'MERGE RIGHT');
+      ri += 1;
+    }
+
+    writeIndex += 1;
+  }
+
+  while (li < leftItems.length) {
+    await vWrite(writeIndex, leftItems[li].value, [leftItems[li].source], 'FLUSH LEFT');
+    li += 1;
+    writeIndex += 1;
+  }
+
+  while (ri < rightItems.length) {
+    await vWrite(writeIndex, rightItems[ri].value, [rightItems[ri].source], 'FLUSH RIGHT');
+    ri += 1;
+    writeIndex += 1;
+  }
+}
+
+async function quickSort() {
+  await quickSortRange(0, arr.length - 1);
+  pivotIdx = -1;
+  markAllSorted();
+  setRange(0, arr.length - 1);
+}
+
+async function quickSortRange(low, high) {
+  if (low > high) return;
+  if (low === high) {
+    sortedSet.add(low);
+    return;
+  }
+
+  setRange(low, high);
+  const pivot = await partition(low, high);
+  sortedSet.add(pivot);
+  await quickSortRange(low, pivot - 1);
+  await quickSortRange(pivot + 1, high);
+}
+
+async function partition(low, high) {
+  const pivotValue = arr[high];
+  reads += 1;
+  pivotIdx = high;
+  let store = low - 1;
+
+  for (let scan = low; scan < high; scan += 1) {
+    const comparison = await vCompareValues(scan, high, arr[scan], pivotValue, 'PARTITION SCAN');
+    if (comparison < 0) {
+      store += 1;
+      await vSwap(store, scan, 'PARTITION SWAP');
+    }
+  }
+
+  await vSwap(store + 1, high, 'LOCK PIVOT');
+  pivotIdx = -1;
+  return store + 1;
+}
+
+async function heapSort() {
+  const length = arr.length;
+
+  for (let i = Math.floor(length / 2) - 1; i >= 0; i -= 1) {
+    await heapify(length, i);
+  }
+
+  for (let end = length - 1; end > 0; end -= 1) {
+    setRange(0, end);
+    await vSwap(0, end, 'EXTRACT MAX');
+    sortedSet.add(end);
+    await heapify(end, 0);
+  }
+
+  markAllSorted();
+  setRange(0, arr.length - 1);
+}
+
+async function heapify(size, root) {
+  let largest = root;
+  setRange(0, size - 1);
+
+  while (true) {
+    let candidate = largest;
+    const left = largest * 2 + 1;
+    const right = largest * 2 + 2;
+
+    if (left < size && (await vCompare(left, candidate, 'HEAP LEFT')) > 0) {
+      candidate = left;
+    }
+    if (right < size && (await vCompare(right, candidate, 'HEAP RIGHT')) > 0) {
+      candidate = right;
+    }
+
+    if (candidate === largest) break;
+
+    await vSwap(largest, candidate, 'HEAPIFY SWAP');
+    largest = candidate;
+  }
+}
+
+async function shellSort() {
+  for (let gap = Math.floor(arr.length / 2); gap > 0; gap = Math.floor(gap / 2)) {
+    pushLog(`Shell gap ${gap}`);
+
+    for (let i = gap; i < arr.length; i += 1) {
+      const temp = arr[i];
+      reads += 1;
+      let j = i;
+
+      setRange(Math.max(0, i - gap * 2), i);
+      await vFocus([i], `GAP ${gap} PICKUP`, 0.58);
+
+      while (j >= gap) {
+        const comparison = await vCompareValues(j - gap, i, arr[j - gap], temp, `GAP ${gap} CHECK`);
+        if (comparison > 0) {
+          await vWrite(j, arr[j - gap], [j - gap], `GAP ${gap} SHIFT`);
+          j -= gap;
+        } else {
+          break;
+        }
+      }
+
+      await vWrite(j, temp, [i], `GAP ${gap} INSERT`);
+    }
+  }
+
+  markAllSorted();
+  setRange(0, arr.length - 1);
+}
+
+async function oddEvenSort() {
+  let sorted = false;
+  let cycle = 1;
+
+  while (!sorted) {
+    sorted = true;
+    pushLog(`Odd-even cycle ${cycle}`);
+
+    for (const start of [1, 0]) {
+      for (let i = start; i < arr.length - 1; i += 2) {
+        setRange(i, i + 1);
+        if ((await vCompare(i, i + 1, start === 1 ? 'ODD PASS' : 'EVEN PASS')) > 0) {
+          await vSwap(i, i + 1, 'ODD-EVEN SWAP');
+          sorted = false;
+        }
+      }
+    }
+
+    cycle += 1;
+  }
+
+  markAllSorted();
+  setRange(0, arr.length - 1);
+}
+
+async function countingSort() {
+  const min = Math.min(...arr);
+  const max = Math.max(...arr);
+  const range = max - min + 1;
+  const count = new Array(range).fill(0);
+
+  pushLog(`Counting range ${min}..${max}`);
+  setRange(0, arr.length - 1);
+
+  for (let i = 0; i < arr.length; i += 1) {
+    await waitForFlowControl();
+    const value = arr[i];
+    reads += 1;
+    comparisons += 1;
+    highlight = new Set([i]);
+    swapSet = new Set();
+    phaseMessage = 'COUNT FREQUENCIES';
+    actionMessage = `COUNT VALUE ${value}`;
+    count[value - min] += 1;
+    await renderStep(0.72);
+  }
+
+  for (let i = 1; i < count.length; i += 1) {
+    count[i] += count[i - 1];
+  }
+
+  const output = new Array(arr.length);
+
+  for (let i = arr.length - 1; i >= 0; i -= 1) {
+    await waitForFlowControl();
+    const value = arr[i];
+    reads += 1;
+    const slot = --count[value - min];
+    output[slot] = value;
+    writes += 1;
+    highlight = new Set([i]);
+    swapSet = new Set([slot]);
+    phaseMessage = 'BUILD OUTPUT';
+    actionMessage = `PLACE ${value} INTO SLOT ${slot}`;
+    await renderStep(0.74);
+    swapSet = new Set();
+  }
+
+  for (let i = 0; i < output.length; i += 1) {
+    await vWrite(i, output[i], [], 'WRITE OUTPUT');
+    sortedSet.add(i);
+  }
+
+  setRange(0, arr.length - 1);
+}
+
+async function radixSort() {
+  const max = Math.max(...arr);
+
+  for (let exp = 1; Math.floor(max / exp) > 0; exp *= 10) {
+    pushLog(`Radix digit ${exp}`);
+    await countingByDigit(exp);
+  }
+
+  markAllSorted();
+  setRange(0, arr.length - 1);
+}
+
+async function countingByDigit(exp) {
+  const count = new Array(10).fill(0);
+  const output = new Array(arr.length);
+  setRange(0, arr.length - 1);
+
+  for (let i = 0; i < arr.length; i += 1) {
+    await waitForFlowControl();
+    const value = arr[i];
+    const digit = Math.floor(value / exp) % 10;
+    reads += 1;
+    comparisons += 1;
+    highlight = new Set([i]);
+    swapSet = new Set();
+    phaseMessage = `COUNT DIGIT x${exp}`;
+    actionMessage = `READ ${value} -> DIGIT ${digit}`;
+    count[digit] += 1;
+    await renderStep(0.66);
+  }
+
+  for (let i = 1; i < count.length; i += 1) {
+    count[i] += count[i - 1];
+  }
+
+  for (let i = arr.length - 1; i >= 0; i -= 1) {
+    await waitForFlowControl();
+    const value = arr[i];
+    const digit = Math.floor(value / exp) % 10;
+    const slot = --count[digit];
+    reads += 1;
+    writes += 1;
+    output[slot] = value;
+    highlight = new Set([i]);
+    swapSet = new Set([slot]);
+    phaseMessage = `BUCKET DIGIT x${exp}`;
+    actionMessage = `PLACE ${value} INTO SLOT ${slot}`;
+    await renderStep(0.68);
+    swapSet = new Set();
+  }
+
+  for (let i = 0; i < output.length; i += 1) {
+    await vWrite(i, output[i], [], `WRITE DIGIT x${exp}`);
+  }
+}
+
+const ALGOS = {
+  bubble: bubbleSort,
+  cocktail: cocktailSort,
+  selection: selectionSort,
+  insertion: insertionSort,
+  gnome: gnomeSort,
+  comb: combSort,
+  merge: mergeSort,
+  quick: quickSort,
+  heap: heapSort,
+  shell: shellSort,
+  'odd-even': oddEvenSort,
+  counting: countingSort,
+  radix: radixSort,
+};
+
+async function beginSort({ startPaused = false, stepBudget = 0 } = {}) {
+  if (running) return;
+
+  running = true;
+  paused = startPaused;
+  stopFlag = false;
+  manualStepRequests = stepBudget;
+  highlight = new Set();
+  swapSet = new Set();
+  pivotIdx = -1;
+  activeRange = null;
+
+  lockControls(true);
+  setRunState(startPaused ? 'paused' : 'running');
+  phaseMessage = localizePhrase(startPaused ? 'STEP MODE ARMED' : 'EXECUTING SORT');
+  actionMessage = localizePhrase(`ENGAGING ${getLocalizedAlgoInfo(refs.algoSelect.value).name}`);
+  pushLog(`${getLocalizedAlgoInfo(refs.algoSelect.value).label} engaged`);
+
+  if (!startPaused) startClock();
+  updateButtons();
+  updateHUD();
+  draw();
+
+  try {
+    await ALGOS[refs.algoSelect.value]();
+    highlight = new Set();
+    swapSet = new Set();
+    pivotIdx = -1;
+    setRunState('completed');
+    phaseMessage = localizePhrase('SORT COMPLETE');
+    actionMessage = currentLocale === 'pt'
+      ? `${getLocalizedAlgoInfo(refs.algoSelect.value).name} FINALIZADO`
+      : `${getLocalizedAlgoInfo(refs.algoSelect.value).name} FINISHED`;
+    pushLog(`${getLocalizedAlgoInfo(refs.algoSelect.value).label} completed`);
+  } catch (error) {
+    if (error !== STOP_SIGNAL) throw error;
+    highlight = new Set();
+    swapSet = new Set();
+    pivotIdx = -1;
+    setRunState('halted');
+    phaseMessage = localizePhrase('EXECUTION HALTED');
+    actionMessage = localizePhrase('RUN ABORTED BY USER');
+    pushLog('Execution halted');
+  } finally {
+    running = false;
+    paused = false;
+    stopFlag = false;
+    manualStepRequests = 0;
+    stopClock();
+    lockControls(false);
+    updateButtons();
+    updateHUD();
+    draw();
+  }
+}
+
+function runOrResume() {
+  if (running && paused) {
+    paused = false;
+    setRunState('running');
+    phaseMessage = localizePhrase('RESUMING');
+    actionMessage = localizePhrase(`RESUME ${getLocalizedAlgoInfo(refs.algoSelect.value).name}`);
+    pushLog('Execution resumed');
+    startClock();
+    releaseFlow();
+    updateButtons();
+    updateHUD();
+    return;
+  }
+
+  if (!running) {
+    beginSort();
+  }
+}
+
+function pauseSort() {
+  if (!running || paused) return;
+  paused = true;
+  stopClock();
+  setRunState('paused');
+  phaseMessage = localizePhrase('PAUSED');
+  actionMessage = localizePhrase('WAITING FOR RESUME OR STEP');
+  pushLog('Execution paused');
+  updateButtons();
+  updateHUD();
+}
+
+function stepSort() {
+  if (running && !paused) return;
+
+  if (!running) {
+    beginSort({ startPaused: true, stepBudget: 1 });
+    pushLog('Single-step mode started');
+    return;
+  }
+
+  manualStepRequests += 1;
+  phaseMessage = localizePhrase('STEP');
+  actionMessage = localizePhrase('ADVANCE ONE OPERATION');
+  pushLog('Single-step advance');
+  releaseFlow();
+  updateHUD();
+}
+
+function haltSort() {
+  if (!running) return;
+  stopFlag = true;
+  paused = false;
+  manualStepRequests = 0;
+  phaseMessage = localizePhrase('HALTING');
+  actionMessage = localizePhrase('STOP SIGNAL SENT');
+  releaseFlow();
+  updateButtons();
+  updateHUD();
+}
+
+function resetSort() {
+  if (running) return;
+  generateArray();
+  pushLog('Reset completed');
+}
+
+refs.runBtn.addEventListener('click', runOrResume);
+refs.pauseBtn.addEventListener('click', pauseSort);
+refs.stepBtn.addEventListener('click', stepSort);
+refs.haltBtn.addEventListener('click', haltSort);
+refs.resetBtn.addEventListener('click', resetSort);
+refs.langButtons.forEach((button) => {
+  button.addEventListener('click', () => {
+    setLocale(button.dataset.locale);
+  });
+});
+
+refs.algoSelect.addEventListener('change', () => {
+  updateAlgoInfo();
+  if (!running) {
+    phaseMessage = localizePhrase('ALGORITHM UPDATED');
+    actionMessage = localizePhrase(`READY FOR ${getLocalizedAlgoInfo(refs.algoSelect.value).name}`);
+    pushLog(`Algorithm set :: ${getLocalizedAlgoInfo(refs.algoSelect.value).label}`);
+    updateHUD();
+    draw();
+  }
+});
+
+refs.orderSelect.addEventListener('change', () => {
+  if (!running) {
+    generateArray();
+  }
+});
+
+refs.sizeRange.addEventListener('input', () => {
+  N = Number(refs.sizeRange.value);
+  refs.sizeLabel.textContent = String(N);
+  if (!running) {
+    generateArray({ announce: false });
+    pushLog(`Array size set :: ${N}`);
+  } else {
+    updateHUD();
+  }
+});
+
+refs.speedRange.addEventListener('input', updateHUD);
+
+window.addEventListener('resize', resizeCanvas);
+
+window.addEventListener('keydown', (event) => {
+  const tag = document.activeElement?.tagName;
+  if (tag === 'INPUT' || tag === 'SELECT') return;
+
+  if (event.code === 'Space') {
+    event.preventDefault();
+    if (running && !paused) pauseSort();
+    else runOrResume();
+  }
+
+  if (event.code === 'KeyS') {
+    event.preventDefault();
+    stepSort();
+  }
+
+  if (event.code === 'KeyH' || event.code === 'Escape') {
+    event.preventDefault();
+    haltSort();
+  }
+
+  if (event.code === 'KeyR' && !running) {
+    event.preventDefault();
+    resetSort();
+  }
+});
+
+pushLog('System boot complete');
+pushLog('Expanded algorithm pack loaded');
+updateStaticText();
+updateAlgoInfo();
+generateArray({ announce: false });
+pushLog('Dataset ready');
+resizeCanvas();
+updateButtons();
+updateHUD();
+draw();
+</script>
+</body>
+</html>

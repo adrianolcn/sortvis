@@ -1,0 +1,13 @@
+{
+  "name": "sortvis",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Retro sorting visualizer with Playwright smoke tests",
+  "scripts": {
+    "ci:check": "node scripts/ci-check.js",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.54.2"
+  }
+}
