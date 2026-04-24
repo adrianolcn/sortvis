@@ -1,9 +1,5 @@
 <div align="center">
 
-<img src="docs/demo/sortvis-hero.gif" width="100%" />
-
-<br />
-
 # 🟢 SORT//VIS
 
 <pre>
@@ -17,23 +13,26 @@
 +--------------------------------------------------------------+
 </pre>
 
-### Visualizador retro de algoritmos de ordenação com JavaScript puro, Canvas e execução passo a passo.
+### 🧠 Visualizador retro de algoritmos de ordenação com JavaScript puro, Canvas e execução passo a passo.
 
-</div>
+![HTML5](https://img.shields.io/badge/HTML5-111?style=for-the-badge&logo=html5&logoColor=E34F26)
+![CSS3](https://img.shields.io/badge/CSS3-111?style=for-the-badge&logo=css3&logoColor=1572B6)
+![JavaScript](https://img.shields.io/badge/JavaScript-111?style=for-the-badge&logo=javascript&logoColor=F7DF1E)
+![Canvas](https://img.shields.io/badge/Canvas-111?style=for-the-badge&logo=javascript&logoColor=39FF14)
+![Playwright](https://img.shields.io/badge/Playwright-111?style=for-the-badge&logo=playwright&logoColor=45BA4B)
+![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-111?style=for-the-badge&logo=githubactions&logoColor=2088FF)
 
----
+![License](https://img.shields.io/badge/License-MIT-39FF14?style=flat-square)
+![Status](https://img.shields.io/badge/status-online-39FF14?style=flat-square)
+![Build](https://img.shields.io/badge/build-zero_step-00E5FF?style=flat-square)
+![Portfolio](https://img.shields.io/badge/portfolio-ready-FFB700?style=flat-square)
+![i18n](https://img.shields.io/badge/i18n-EN%20%7C%20PT--BR-FF5CF0?style=flat-square)
 
-## 🎬 Demo
-
-<div align="center">
-
-<a href="docs/demo/sortvis-demo.mp4">
-  <img src="docs/demo/sortvis-hero.gif" width="900"/>
-</a>
-
-<br />
-
-<em>▶️ Clique para assistir ao vídeo completo</em>
+<a href="#preview">Preview</a> •
+<a href="#sobre-o-projeto">Sobre</a> •
+<a href="#algoritmos">Algoritmos</a> •
+<a href="#executar">Executar</a> •
+<a href="#testes">Testes</a>
 
 </div>
 
@@ -43,13 +42,83 @@
 
 <div align="center">
 
-<p>
-  <img src="docs/screenshots/sortvis-preview-en.png" width="49%" />
-  <img src="docs/screenshots/sortvis-preview-ptbr.png" width="49%" />
-</p>
+<img src="docs/screenshots/sortvis-preview-en.png" width="100%" />
 
-<p>
-  <em>🇺🇸 English</em> • <em>🇧🇷 Português (Brasil)</em>
-</p>
+<br/><br/>
+
+<img src="docs/screenshots/sortvis-preview-ptbr.png" width="100%" />
 
 </div>
+
+---
+
+## 🧠 Sobre o projeto
+
+O **SORT//VIS** é uma aplicação front-end criada para visualizar algoritmos de ordenação em tempo real com estética CRT.
+
+O objetivo não é apenas visualizar barras, mas entender profundamente:
+
+- comparações
+- trocas
+- leituras e escritas
+- comportamento interno dos algoritmos
+
+---
+
+## ✨ Destaques
+
+- 🟢 Interface CRT completa (scanlines + glow)
+- 🧮 13 algoritmos de ordenação
+- ⏭️ Execução passo a passo real
+- 📊 Telemetria completa
+- 🌐 Internacionalização (EN/PT-BR)
+- 🧪 Testes automatizados
+- ⚡ Zero build
+
+---
+
+## 🎮 Controles
+
+| Controle | Função |
+|---|---|
+| Start | Inicia |
+| Pause | Pausa |
+| Step | Passo |
+| Halt | Para |
+| Reset | Reinicia |
+
+---
+
+## 🧩 Algoritmos
+
+Bubble, Selection, Insertion, Merge, Quick, Heap, Shell, Counting, Radix e mais.
+
+---
+
+## 🚀 Executar
+
+```bash
+npm install
+node scripts/ci-check.js
+npm run test:e2e
+```
+
+Ou abrir:
+
+```bash
+open index.html
+```
+
+---
+
+## 🧪 Testes
+
+- Playwright
+- CI GitHub Actions
+- validação estrutural
+
+---
+
+## 📄 Licença
+
+MIT
